@@ -16,9 +16,11 @@
       ]
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.georgegoesdev.armageddonradar"
     },
     "android": {
+      "package": "com.georgegoesdev.armageddonradar",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
