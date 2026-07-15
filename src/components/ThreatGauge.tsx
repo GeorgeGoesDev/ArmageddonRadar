@@ -3,7 +3,6 @@ import { Animated, View } from 'react-native';
 import Svg, {
   Circle,
   Defs,
-  G,
   Line,
   LinearGradient,
   Path,
@@ -13,8 +12,6 @@ import Svg, {
 import { colors } from '../theme/colors';
 import { describeArc, polarToCartesian } from '../utils/geometry';
 import { getThreatLevel } from '../utils/threat';
-
-const AnimatedG = Animated.createAnimatedComponent(G);
 
 interface ThreatGaugeProps {
   /** Closest asteroid's miss distance in lunar distances. */
@@ -44,16 +41,18 @@ export function ThreatGauge({ lunar, size = 260 }: ThreatGaugeProps) {
   useEffect(() => {
     Animated.spring(angle, {
       toValue: targetAngle,
-      useNativeDriver: false,
+      useNativeDriver: true,
       friction: 7,
       tension: 40,
     }).start();
   }, [targetAngle, angle]);
 
-  const rotation = angle.interpolate({
+  // Needle rotation as a degree string for the RN view transform. Rotation is
+  // clockwise and the needle is drawn pointing up, so +90° = right (danger),
+  // -90° = left (safe).
+  const needleRotation = angle.interpolate({
     inputRange: [0, 180],
-    // SVG rotation is clockwise; our needle base points up (toward 90°).
-    outputRange: [90, -90],
+    outputRange: ['90deg', '-90deg'],
   });
 
   // Tick marks around the arc.
@@ -66,6 +65,34 @@ export function ThreatGauge({ lunar, size = 260 }: ThreatGaugeProps) {
 
   return (
     <View style={{ width, height }}>
+      {/* Needle: rotate a plain RN view whose centre sits on the hub (cx,cy).
+          Rendered under the dial Svg so the centre readout stays on top. RN
+          views pivot about their own centre — unlike an animated SVG <G>, whose
+          origin/translate props are ignored when `rotation` is animated. */}
+      <Animated.View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left: cx - radius,
+          top: cy - radius,
+          width: radius * 2,
+          height: radius * 2,
+          transform: [{ rotate: needleRotation }],
+        }}
+      >
+        <Svg width={radius * 2} height={radius * 2}>
+          <Line
+            x1={radius}
+            y1={radius}
+            x2={radius}
+            y2={6}
+            stroke={color}
+            strokeWidth={4}
+            strokeLinecap="round"
+          />
+        </Svg>
+      </Animated.View>
+
       <Svg width={width} height={height}>
         <Defs>
           <LinearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
@@ -115,20 +142,6 @@ export function ThreatGauge({ lunar, size = 260 }: ThreatGaugeProps) {
           />
         ))}
 
-        {/* Animated needle — translate to centre, rotate about local origin
-            (0,0). Animated `rotation` on <G> ignores originX/originY in
-            react-native-svg, so we anchor via the x/y translate instead. */}
-        <AnimatedG x={cx} y={cy} rotation={rotation as unknown as number}>
-          <Line
-            x1={0}
-            y1={0}
-            x2={0}
-            y2={-radius + 6}
-            stroke={color}
-            strokeWidth={4}
-            strokeLinecap="round"
-          />
-        </AnimatedG>
         <Circle cx={cx} cy={cy} r={9} fill={colors.charcoal} stroke={color} strokeWidth={3} />
 
         {/* Centre readout */}

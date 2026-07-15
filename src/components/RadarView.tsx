@@ -13,8 +13,6 @@ import { colors } from '../theme/colors';
 import { Asteroid } from '../types/neo';
 import { angleFromId, clamp, polarToCartesian } from '../utils/geometry';
 
-const AnimatedG = Animated.createAnimatedComponent(G);
-
 // Precomputed fading tail for the radar sweep: a fan of lines trailing the
 // leading edge, each dimmer than the last, so it reads as a smooth glowing wipe.
 const SWEEP_TAIL = Array.from({ length: 22 }, (_, i) => ({
@@ -65,13 +63,16 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
         toValue: 1,
         duration: 4000,
         easing: Easing.linear,
-        useNativeDriver: false,
+        useNativeDriver: true,
       }),
     );
     loop.start();
     return () => loop.stop();
   }, [spin]);
-  const sweepRotation = spin.interpolate({ inputRange: [0, 1], outputRange: [0, 360] });
+  const sweepRotation = spin.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   // Pulsing halo for the selected dot.
   const pulse = useRef(new Animated.Value(0)).current;
@@ -119,47 +120,6 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
         {/* Crosshair */}
         <Line x1={cx} y1={cy - maxR} x2={cx} y2={cy + maxR} stroke={colors.gridLineFaint} strokeWidth={1} />
         <Line x1={cx - maxR} y1={cy} x2={cx + maxR} y2={cy} stroke={colors.gridLineFaint} strokeWidth={1} />
-
-        {/* Rotating sweep: bright leading edge with a smoothly fading tail.
-            The group is translated to the centre (x/y) and rotated about its
-            own local origin (0,0) — animated `rotation` on <G> does not reliably
-            honour originX/originY in react-native-svg, so we anchor it via the
-            translate instead to keep the pivot dead-centre. */}
-        <AnimatedG x={cx} y={cy} rotation={sweepRotation as unknown as number}>
-          {SWEEP_TAIL.map((seg) => {
-            const p = polarToCartesian(0, 0, maxR, 90 - seg.offset);
-            return (
-              <Line
-                key={seg.offset}
-                x1={0}
-                y1={0}
-                x2={p.x}
-                y2={p.y}
-                stroke={colors.accentBlue}
-                strokeWidth={2}
-                strokeOpacity={seg.opacity}
-                strokeLinecap="round"
-              />
-            );
-          })}
-          {/* Crisp leading edge + glowing tip */}
-          <Line
-            x1={0}
-            y1={0}
-            x2={polarToCartesian(0, 0, maxR, 90).x}
-            y2={polarToCartesian(0, 0, maxR, 90).y}
-            stroke={colors.accentBlue}
-            strokeWidth={2.5}
-            strokeOpacity={0.95}
-            strokeLinecap="round"
-          />
-          <Circle
-            cx={polarToCartesian(0, 0, maxR, 90).x}
-            cy={polarToCartesian(0, 0, maxR, 90).y}
-            r={3}
-            fill={colors.accentBlue}
-          />
-        </AnimatedG>
 
         {/* Range labels (in lunar distances) */}
         {rings.map((f, i) => (
@@ -213,6 +173,58 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
           );
         })}
       </Svg>
+
+      {/* Rotating sweep overlay. Animated `rotation` on an SVG <G> ignores its
+          origin/translate props (it pins to 0,0), so instead we spin a plain RN
+          view — which reliably pivots about its own centre, exactly the radar
+          centre here. pointerEvents=none lets dot taps pass through. */}
+      <Animated.View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: size,
+          height: size,
+          transform: [{ rotate: sweepRotation }],
+        }}
+      >
+        <Svg width={size} height={size}>
+          {SWEEP_TAIL.map((seg) => {
+            const p = polarToCartesian(cx, cy, maxR, 90 - seg.offset);
+            return (
+              <Line
+                key={seg.offset}
+                x1={cx}
+                y1={cy}
+                x2={p.x}
+                y2={p.y}
+                stroke={colors.accentBlue}
+                strokeWidth={2}
+                strokeOpacity={seg.opacity}
+                strokeLinecap="round"
+              />
+            );
+          })}
+          {/* Crisp leading edge + glowing tip */}
+          <Line
+            x1={cx}
+            y1={cy}
+            x2={polarToCartesian(cx, cy, maxR, 90).x}
+            y2={polarToCartesian(cx, cy, maxR, 90).y}
+            stroke={colors.accentBlue}
+            strokeWidth={2.5}
+            strokeOpacity={0.95}
+            strokeLinecap="round"
+          />
+          <Circle
+            cx={polarToCartesian(cx, cy, maxR, 90).x}
+            cy={polarToCartesian(cx, cy, maxR, 90).y}
+            r={3}
+            fill={colors.accentBlue}
+          />
+        </Svg>
+      </Animated.View>
     </View>
   );
 }
