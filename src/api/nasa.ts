@@ -101,3 +101,53 @@ export async function fetchNeoFeed({
   const data = (await res.json()) as NeoFeedResponse;
   return extractAsteroidsForDate(data, dateKey);
 }
+
+export type NeoWeek = Record<string, Asteroid[]>;
+
+/** Seven consecutive local date keys starting at `startDate` (default today). */
+export function weekDateKeys(startDate: Date = new Date()): string[] {
+  const keys: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    keys.push(getLocalDateKey(d));
+  }
+  return keys;
+}
+
+/**
+ * Fetches the next 7 days of NEOs in a single NeoWs request and returns a
+ * per-day map of normalized, closest-first asteroid arrays. Missing days are
+ * present as empty arrays.
+ */
+export async function fetchNeoWeek({
+  apiKey = DEFAULT_API_KEY,
+  startDate = new Date(),
+  signal,
+}: { apiKey?: string; startDate?: Date; signal?: AbortSignal } = {}): Promise<NeoWeek> {
+  const keys = weekDateKeys(startDate);
+  const start = keys[0];
+  const end = keys[keys.length - 1];
+  const url =
+    `${NASA_FEED_URL}?start_date=${start}&end_date=${end}` +
+    `&api_key=${encodeURIComponent(apiKey)}`;
+
+  const res = await fetch(url, { signal });
+  if (!res.ok) {
+    if (res.status === 429) {
+      throw new Error(
+        'NASA rate limit reached (DEMO_KEY allows ~30 requests/hour). ' +
+          'Add your own API key in Settings or try again later.',
+      );
+    }
+    throw new Error(`NASA API request failed (${res.status} ${res.statusText}).`);
+  }
+  const data = (await res.json()) as NeoFeedResponse;
+  const byDate = data.near_earth_objects ?? {};
+  const week: NeoWeek = {};
+  for (const key of keys) {
+    const raw = byDate[key] ?? [];
+    week[key] = raw.map(normalizeNeo).sort((a, b) => a.missLunar - b.missLunar);
+  }
+  return week;
+}
