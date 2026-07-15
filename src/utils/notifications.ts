@@ -1,18 +1,35 @@
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Asteroid } from '../types/neo';
 import { formatLocalTime } from './dates';
 
 /**
  * Notification engine for "Set Telescope Reminder".
  *
- * Uses the Expo SDK 57 API: a `NotificationBehavior` handler with
- * `shouldShowBanner` / `shouldShowList`, and a `SchedulableTriggerInputTypes.DATE`
- * trigger fired at the asteroid's closest-approach time.
+ * ⚠️ Expo Go caveat: since SDK 53, `expo-notifications` throws on Android the
+ * moment its native module initialises inside Expo Go. So we:
+ *   1. detect Expo Go via `expo-constants`, and
+ *   2. only ever `require('expo-notifications')` when NOT in Expo Go.
+ * In Expo Go the reminder gracefully no-ops with a helpful message; in a
+ * development or production build it schedules a real local notification.
  */
 
-/** Registers how notifications behave while the app is foregrounded. */
+export const isExpoGo =
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+const DEV_BUILD_HINT =
+  'Reminders need a development build — Expo Go removed notifications in SDK 53. ' +
+  'Run `npx expo run:android` to enable them.';
+
+// Lazy require so the module never initialises inside Expo Go.
+function getNotifications() {
+  return require('expo-notifications') as typeof import('expo-notifications');
+}
+
+/** Registers foreground notification behaviour (no-op in Expo Go). */
 export function configureNotifications(): void {
+  if (isExpoGo) return;
+  const Notifications = getNotifications();
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowBanner: true,
@@ -25,6 +42,7 @@ export function configureNotifications(): void {
 
 async function ensureAndroidChannel(): Promise<void> {
   if (Platform.OS !== 'android') return;
+  const Notifications = getNotifications();
   await Notifications.setNotificationChannelAsync('telescope-reminders', {
     name: 'Telescope Reminders',
     importance: Notifications.AndroidImportance.HIGH,
@@ -34,6 +52,7 @@ async function ensureAndroidChannel(): Promise<void> {
 
 /** Requests permission, returning true when granted. */
 export async function requestNotificationPermissions(): Promise<boolean> {
+  const Notifications = getNotifications();
   await ensureAndroidChannel();
   const settings = await Notifications.getPermissionsAsync();
   if (settings.granted) return true;
@@ -60,6 +79,11 @@ export interface ScheduledReminder {
 export async function scheduleApproachReminder(
   asteroid: Asteroid,
 ): Promise<ScheduledReminder> {
+  if (isExpoGo) {
+    throw new Error(DEV_BUILD_HINT);
+  }
+
+  const Notifications = getNotifications();
   const granted = await requestNotificationPermissions();
   if (!granted) {
     throw new Error('Notification permission was not granted.');

@@ -8,7 +8,7 @@ import { getThreatLevel } from '../utils/threat';
 import { describeDiameter } from '../data/diameterComparisons';
 import { formatInt, formatKm, formatKph, formatLunar, formatMiles } from '../utils/units';
 import { formatLocalDateTime, formatLocalTime } from '../utils/dates';
-import { scheduleApproachReminder } from '../utils/notifications';
+import { isExpoGo, scheduleApproachReminder } from '../utils/notifications';
 
 interface DetailSheetProps {
   asteroid: Asteroid | null;
@@ -146,6 +146,11 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
                 style={{ color: reminder.status === 'error' ? colors.threatOrange : colors.safeGreen }}
               >
                 {reminder.message}
+              </Text>
+            )}
+            {isExpoGo && reminder.status === 'idle' && (
+              <Text className="mt-2 text-center text-[11px]" style={{ color: colors.textMuted }}>
+                Note: in Expo Go this is a preview — reminders fire in a development build.
               </Text>
             )}
 
