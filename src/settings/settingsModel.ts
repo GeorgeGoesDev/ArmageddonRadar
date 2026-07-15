@@ -38,7 +38,7 @@ export function mergeSettings(stored: unknown): Settings {
     velocityUnit: VEL.includes(s.velocityUnit as VelocityUnit) ? (s.velocityUnit as VelocityUnit) : DEFAULT_SETTINGS.velocityUnit,
     dangerLD,
     safeLD,
-    apiKeyOverride: typeof s.apiKeyOverride === 'string' && s.apiKeyOverride.trim() ? s.apiKeyOverride : null,
+    apiKeyOverride: typeof s.apiKeyOverride === 'string' && s.apiKeyOverride.trim() ? s.apiKeyOverride.trim() : null,
   };
 }
 

@@ -16,6 +16,9 @@ describe('mergeSettings', () => {
     const s = mergeSettings({ dangerLD: 9, safeLD: 4 });
     expect(s.dangerLD).toBeLessThan(s.safeLD);
   });
+  it('trims apiKeyOverride when storing', () => {
+    expect(mergeSettings({ apiKeyOverride: '  K  ' }).apiKeyOverride).toBe('K');
+  });
 });
 
 describe('resolveApiKey', () => {
