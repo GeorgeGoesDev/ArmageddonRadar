@@ -63,7 +63,8 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
         toValue: 1,
         duration: 4000,
         easing: Easing.linear,
-        useNativeDriver: true,
+        // JS driver: the native driver truncates a looping 0→360deg rotation.
+        useNativeDriver: false,
       }),
     );
     loop.start();
