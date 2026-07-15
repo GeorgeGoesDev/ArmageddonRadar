@@ -190,8 +190,10 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
         }}
       >
         <Svg width={size} height={size}>
+          {/* Sweep rotates clockwise, so the tail trails to the LEFT of the
+              leading edge (larger polar angle = 90 + offset). */}
           {SWEEP_TAIL.map((seg) => {
-            const p = polarToCartesian(cx, cy, maxR, 90 - seg.offset);
+            const p = polarToCartesian(cx, cy, maxR, 90 + seg.offset);
             return (
               <Line
                 key={seg.offset}
@@ -206,7 +208,7 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
               />
             );
           })}
-          {/* Crisp leading edge + glowing tip */}
+          {/* Crisp leading edge */}
           <Line
             x1={cx}
             y1={cy}
@@ -217,12 +219,8 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
             strokeOpacity={0.95}
             strokeLinecap="round"
           />
-          <Circle
-            cx={polarToCartesian(cx, cy, maxR, 90).x}
-            cy={polarToCartesian(cx, cy, maxR, 90).y}
-            r={3}
-            fill={colors.accentBlue}
-          />
+          {/* Glowing hub emitter at the centre */}
+          <Circle cx={cx} cy={cy} r={4} fill={colors.accentBlue} />
         </Svg>
       </Animated.View>
     </View>
