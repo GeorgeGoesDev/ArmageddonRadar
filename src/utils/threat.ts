@@ -1,4 +1,4 @@
-import { colors } from '../theme/colors';
+﻿import { colors } from '../theme/colors';
 
 export type ThreatZone = 'danger' | 'watch' | 'safe';
 
@@ -37,8 +37,8 @@ export function getThreatLevel(
     return {
       t,
       zone: 'danger',
-      verdict: '🚨 Lock your doors. (Just kidding, but it\'s close!)',
-      shortVerdict: 'Lock your doors (just kidding… mostly)',
+      verdict: 'ðŸš¨ Lock your doors. (Just kidding, but it’s close!)',
+      shortVerdict: 'Lock your doors (just kiddingâ€¦ mostly)',
       color: colors.threatOrange,
     };
   }
@@ -46,7 +46,7 @@ export function getThreatLevel(
     return {
       t,
       zone: 'watch',
-      verdict: '👀 Keep your eyes on the skies.',
+      verdict: 'ðŸ‘€ Keep your eyes on the skies.',
       shortVerdict: 'Keep your eyes on the skies',
       color: colors.threatYellow,
     };
@@ -54,8 +54,9 @@ export function getThreatLevel(
   return {
     t,
     zone: 'safe',
-    verdict: '🛡️ Verdict: Not today, space rocks.',
+    verdict: 'ðŸ›¡ï¸ Verdict: Not today, space rocks.',
     shortVerdict: 'Not today, space rocks',
     color: colors.safeGreen,
   };
 }
+
