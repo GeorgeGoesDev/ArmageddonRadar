@@ -115,17 +115,15 @@ export function ThreatGauge({ lunar, size = 260 }: ThreatGaugeProps) {
           />
         ))}
 
-        {/* Animated needle */}
-        <AnimatedG
-          originX={cx}
-          originY={cy}
-          rotation={rotation as unknown as number}
-        >
+        {/* Animated needle — translate to centre, rotate about local origin
+            (0,0). Animated `rotation` on <G> ignores originX/originY in
+            react-native-svg, so we anchor via the x/y translate instead. */}
+        <AnimatedG x={cx} y={cy} rotation={rotation as unknown as number}>
           <Line
-            x1={cx}
-            y1={cy}
-            x2={cx}
-            y2={cy - radius + 6}
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={-radius + 6}
             stroke={color}
             strokeWidth={4}
             strokeLinecap="round"

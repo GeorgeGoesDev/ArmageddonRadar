@@ -120,15 +120,19 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
         <Line x1={cx} y1={cy - maxR} x2={cx} y2={cy + maxR} stroke={colors.gridLineFaint} strokeWidth={1} />
         <Line x1={cx - maxR} y1={cy} x2={cx + maxR} y2={cy} stroke={colors.gridLineFaint} strokeWidth={1} />
 
-        {/* Rotating sweep: bright leading edge with a smoothly fading tail */}
-        <AnimatedG originX={cx} originY={cy} rotation={sweepRotation as unknown as number}>
+        {/* Rotating sweep: bright leading edge with a smoothly fading tail.
+            The group is translated to the centre (x/y) and rotated about its
+            own local origin (0,0) — animated `rotation` on <G> does not reliably
+            honour originX/originY in react-native-svg, so we anchor it via the
+            translate instead to keep the pivot dead-centre. */}
+        <AnimatedG x={cx} y={cy} rotation={sweepRotation as unknown as number}>
           {SWEEP_TAIL.map((seg) => {
-            const p = polarToCartesian(cx, cy, maxR, 90 - seg.offset);
+            const p = polarToCartesian(0, 0, maxR, 90 - seg.offset);
             return (
               <Line
                 key={seg.offset}
-                x1={cx}
-                y1={cy}
+                x1={0}
+                y1={0}
                 x2={p.x}
                 y2={p.y}
                 stroke={colors.accentBlue}
@@ -140,18 +144,18 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
           })}
           {/* Crisp leading edge + glowing tip */}
           <Line
-            x1={cx}
-            y1={cy}
-            x2={polarToCartesian(cx, cy, maxR, 90).x}
-            y2={polarToCartesian(cx, cy, maxR, 90).y}
+            x1={0}
+            y1={0}
+            x2={polarToCartesian(0, 0, maxR, 90).x}
+            y2={polarToCartesian(0, 0, maxR, 90).y}
             stroke={colors.accentBlue}
             strokeWidth={2.5}
             strokeOpacity={0.95}
             strokeLinecap="round"
           />
           <Circle
-            cx={polarToCartesian(cx, cy, maxR, 90).x}
-            cy={polarToCartesian(cx, cy, maxR, 90).y}
+            cx={polarToCartesian(0, 0, maxR, 90).x}
+            cy={polarToCartesian(0, 0, maxR, 90).y}
             r={3}
             fill={colors.accentBlue}
           />
