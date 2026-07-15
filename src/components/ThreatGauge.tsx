@@ -41,7 +41,9 @@ export function ThreatGauge({ lunar, size = 260 }: ThreatGaugeProps) {
   useEffect(() => {
     Animated.spring(angle, {
       toValue: targetAngle,
-      useNativeDriver: true,
+      // JS driver everywhere — keeps drivers consistent with the radar sweep so
+      // no animated node is ever shared between native and JS drivers.
+      useNativeDriver: false,
       friction: 7,
       tension: 40,
     }).start();
