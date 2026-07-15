@@ -1,30 +1,28 @@
 import './global.css';
 
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DashboardScreen } from './src/screens/DashboardScreen';
 import { configureNotifications } from './src/utils/notifications';
+import { SettingsProvider } from './src/settings/SettingsContext';
+import { queryClient, asyncPersister } from './src/query/persister';
 
-// Register the foreground notification behaviour once, at module load.
 configureNotifications();
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // The NeoWs feed only changes once a day; avoid needless refetches.
-      staleTime: 24 * 60 * 60 * 1000,
-      retry: 1,
-    },
-  },
-});
+const ONE_DAY = 24 * 60 * 60 * 1000;
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <SafeAreaProvider>
-        <DashboardScreen />
-      </SafeAreaProvider>
-    </QueryClientProvider>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister: asyncPersister, maxAge: ONE_DAY, buster: 'v1' }}
+    >
+      <SettingsProvider>
+        <SafeAreaProvider>
+          <DashboardScreen />
+        </SafeAreaProvider>
+      </SettingsProvider>
+    </PersistQueryClientProvider>
   );
 }
