@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getThreatLevel } from '../utils/threat';
 import { colors } from '../theme/colors';
+import { useThresholds } from '../settings/useFormatters';
 
 interface VerdictBannerProps {
   lunar: number;
@@ -16,7 +17,8 @@ const GRADIENTS: Record<string, [string, string]> = {
 
 /** The cheeky verdict banner that sits below the gauge. */
 export function VerdictBanner({ lunar }: VerdictBannerProps) {
-  const { verdict, zone } = getThreatLevel(lunar);
+  const thresholds = useThresholds();
+  const { verdict, zone } = getThreatLevel(lunar, thresholds);
   const gradient = GRADIENTS[zone];
   const darkText = zone !== 'safe';
 

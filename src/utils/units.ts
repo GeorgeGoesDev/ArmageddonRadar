@@ -55,9 +55,3 @@ export function makeFormatters(prefs: UnitPrefs): Formatters {
     },
   };
 }
-
-// Compatibility wrappers (to be removed in Task 11)
-export const formatKph = (kph: number) => makeFormatters({ distanceUnit: 'lunar', velocityUnit: 'kph' }).velocity(kph);
-export const formatMiles = (miles: number) => `${nf0.format(miles)} mi`;
-export const formatLunar = (lunar: number) => `${nf1.format(lunar)} LD`;
-export const formatKm = (km: number) => `${nf0.format(km)} km`;
