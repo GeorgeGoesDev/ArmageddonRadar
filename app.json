@@ -5,7 +5,16 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B0C10",
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#66FCF1"
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true
     },
