@@ -6,9 +6,10 @@ import { Asteroid } from '../types/neo';
 import { colors } from '../theme/colors';
 import { getThreatLevel } from '../utils/threat';
 import { describeDiameter } from '../data/diameterComparisons';
-import { formatInt, formatKm, formatKph, formatLunar, formatMiles } from '../utils/units';
+import { formatInt } from '../utils/units';
 import { formatLocalDateTime, formatLocalTime } from '../utils/dates';
 import { isExpoGo, scheduleApproachReminder } from '../utils/notifications';
+import { useFormatters, useThresholds } from '../settings/useFormatters';
 
 interface DetailSheetProps {
   asteroid: Asteroid | null;
@@ -41,9 +42,11 @@ type ReminderState =
  */
 export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
   const [reminder, setReminder] = useState<ReminderState>({ status: 'idle' });
+  const fmt = useFormatters();
+  const thresholds = useThresholds();
 
   if (!asteroid) return null;
-  const threat = getThreatLevel(asteroid.missLunar);
+  const threat = getThreatLevel(asteroid.missLunar, thresholds);
 
   const handleReminder = async () => {
     setReminder({ status: 'loading' });
@@ -115,10 +118,8 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
               Orbital mechanics
             </Text>
             <DataRow label="Closest approach" value={asteroid.approachDateFull || formatLocalDateTime(asteroid.approachEpochMs)} />
-            <DataRow label="Relative velocity" value={formatKph(asteroid.velocityKph)} />
-            <DataRow label="Miss distance (lunar)" value={formatLunar(asteroid.missLunar)} />
-            <DataRow label="Miss distance (miles)" value={formatMiles(asteroid.missMiles)} />
-            <DataRow label="Miss distance (km)" value={formatKm(asteroid.missKm)} />
+            <DataRow label="Relative velocity" value={fmt.velocity(asteroid.velocityKph)} />
+            <DataRow label="Miss distance" value={fmt.distanceFromLunar(asteroid.missLunar, asteroid.missKm, asteroid.missMiles)} />
             <DataRow label="Estimated diameter" value={`${formatInt(asteroid.diameterMinM)} – ${formatInt(asteroid.diameterMaxM)} m`} />
             <DataRow label="Size, roughly" value={describeDiameter(asteroid.diameterAvgM)} />
 

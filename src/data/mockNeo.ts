@@ -1,5 +1,5 @@
 import { NeoFeedResponse, NeoObject } from '../types/neo';
-import { extractAsteroidsForDate } from '../api/nasa';
+import { extractAsteroidsForDate, type NeoWeek, weekDateKeys } from '../api/nasa';
 import { getLocalDateKey } from '../utils/dates';
 import { Asteroid } from '../types/neo';
 
@@ -111,4 +111,18 @@ export function buildMockFeedResponse(
 /** Convenience: mock data already normalised the same way the live path is. */
 export function getMockAsteroids(date: Date = new Date()): Asteroid[] {
   return extractAsteroidsForDate(buildMockFeedResponse(date), getLocalDateKey(date));
+}
+
+/** Mock week: today has the full seed list; later days get a shuffled subset. */
+export function buildMockWeek(startDate: Date = new Date()): NeoWeek {
+  const keys = weekDateKeys(startDate);
+  const week: NeoWeek = {};
+  keys.forEach((key, i) => {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    const all = getMockAsteroids(d);
+    // Vary count per day so the Week view looks alive.
+    week[key] = all.slice(0, Math.max(1, all.length - i));
+  });
+  return week;
 }

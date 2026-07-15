@@ -1,38 +1,39 @@
-import { colors } from '../theme/colors';
+﻿import { colors } from '../theme/colors';
 
 export type ThreatZone = 'danger' | 'watch' | 'safe';
 
-export interface ThreatLevel {
-  /** Normalised threat 0 (completely safe) → 1 (red alert). Drives the gauge. */
-  t: number;
-  zone: ThreatZone;
-  /** The cheeky verdict banner copy. */
-  verdict: string;
-  /** A terse verdict for the share string. */
-  shortVerdict: string;
-  /** Accent colour for this zone. */
-  color: string;
+export interface ThreatThresholds {
+  dangerLD: number;
+  safeLD: number;
 }
 
-/** Below this many lunar distances we treat things as "red alert". */
-export const DANGER_LD = 1;
-/** At/above this many lunar distances we treat things as "completely safe". */
-export const SAFE_LD = 5;
+export const DEFAULT_THRESHOLDS: ThreatThresholds = { dangerLD: 1, safeLD: 5 };
+
+export interface ThreatLevel {
+  t: number;
+  zone: ThreatZone;
+  verdict: string;
+  shortVerdict: string;
+  color: string;
+}
 
 function clamp01(n: number): number {
   return Math.max(0, Math.min(1, n));
 }
 
 /**
- * Maps the closest asteroid's miss distance (in lunar distances) to a threat
- * level. Anything under 1 LD pushes the needle toward red; anything at or above
- * 5 LD sits fully in the safe zone.
+ * Maps the closest asteroid's miss distance (lunar distances) to a threat
+ * level. Anything under `dangerLD` reads as red alert; anything at/above
+ * `safeLD` sits fully safe.
  */
-export function getThreatLevel(lunar: number): ThreatLevel {
-  // Linear scale: 5 LD → 0, 0 LD → 1. (1 LD lands at t = 0.8, near red.)
-  const t = clamp01((SAFE_LD - lunar) / SAFE_LD);
+export function getThreatLevel(
+  lunar: number,
+  thresholds: ThreatThresholds = DEFAULT_THRESHOLDS,
+): ThreatLevel {
+  const { dangerLD, safeLD } = thresholds;
+  const t = clamp01((safeLD - lunar) / safeLD);
 
-  if (lunar < DANGER_LD) {
+  if (lunar < dangerLD) {
     return {
       t,
       zone: 'danger',
@@ -41,8 +42,7 @@ export function getThreatLevel(lunar: number): ThreatLevel {
       color: colors.threatOrange,
     };
   }
-
-  if (lunar <= SAFE_LD) {
+  if (lunar <= safeLD) {
     return {
       t,
       zone: 'watch',
@@ -51,7 +51,6 @@ export function getThreatLevel(lunar: number): ThreatLevel {
       color: colors.threatYellow,
     };
   }
-
   return {
     t,
     zone: 'safe',
@@ -60,3 +59,4 @@ export function getThreatLevel(lunar: number): ThreatLevel {
     color: colors.safeGreen,
   };
 }
+

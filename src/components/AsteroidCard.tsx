@@ -3,8 +3,8 @@ import { Pressable, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Asteroid } from '../types/neo';
 import { colors } from '../theme/colors';
-import { formatDiameterRange, formatKph, formatLunar, formatMiles } from '../utils/units';
 import { describeDiameter } from '../data/diameterComparisons';
+import { useFormatters } from '../settings/useFormatters';
 
 interface AsteroidCardProps {
   asteroid: Asteroid;
@@ -48,6 +48,7 @@ function Metric({ icon, label, value, highlight }: MetricProps) {
  * highlights its key metrics; the chevron opens the detail sheet.
  */
 export function AsteroidCard({ asteroid, selected, onPress, onDetails }: AsteroidCardProps) {
+  const fmt = useFormatters();
   return (
     <Pressable
       onPress={onPress}
@@ -96,12 +97,12 @@ export function AsteroidCard({ asteroid, selected, onPress, onDetails }: Asteroi
 
       {/* Metrics */}
       <View className="flex-row">
-        <Metric icon="speedometer" label="Velocity" value={formatKph(asteroid.velocityKph)} highlight={selected} />
-        <Metric icon="arrow-expand-horizontal" label="Diameter" value={formatDiameterRange(asteroid.diameterMinM, asteroid.diameterMaxM)} highlight={selected} />
+        <Metric icon="speedometer" label="Velocity" value={fmt.velocity(asteroid.velocityKph)} highlight={selected} />
+        <Metric icon="arrow-expand-horizontal" label="Diameter" value={fmt.diameterRange(asteroid.diameterMinM, asteroid.diameterMaxM)} highlight={selected} />
       </View>
       <View className="flex-row mt-3">
-        <Metric icon="moon-waning-crescent" label="Miss (lunar)" value={formatLunar(asteroid.missLunar)} highlight={selected} />
-        <Metric icon="earth" label="Miss (miles)" value={formatMiles(asteroid.missMiles)} highlight={selected} />
+        <Metric icon="moon-waning-crescent" label="Miss" value={fmt.distanceFromLunar(asteroid.missLunar, asteroid.missKm, asteroid.missMiles)} highlight={selected} />
+        <Metric icon="earth" label="Approach" value={new Date(asteroid.approachEpochMs).toLocaleDateString([], { day: '2-digit', month: 'short' })} highlight={selected} />
       </View>
 
       {/* Fun size comparison */}
