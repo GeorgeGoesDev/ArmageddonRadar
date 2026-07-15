@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Linking, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 import Constants from 'expo-constants';
@@ -29,6 +29,12 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
   const { settings, update } = useSettings();
   const queryClient = useQueryClient();
   const [keyDraft, setKeyDraft] = useState(settings.apiKeyOverride ?? '');
+
+  // Re-seed the key field from persisted settings whenever the sheet opens
+  // (settings hydrate from AsyncStorage after first render).
+  useEffect(() => {
+    if (visible) setKeyDraft(settings.apiKeyOverride ?? '');
+  }, [visible, settings.apiKeyOverride]);
 
   const saveKey = () => {
     update({ apiKeyOverride: keyDraft.trim() || null });
