@@ -2,7 +2,14 @@ import { Asteroid, NeoFeedResponse, NeoObject } from '../types/neo';
 import { getLocalDateKey } from '../utils/dates';
 
 export const NASA_FEED_URL = 'https://api.nasa.gov/neo/rest/v1/feed';
-export const DEFAULT_API_KEY = 'DEMO_KEY';
+
+/**
+ * API key resolution: prefer a build-time `EXPO_PUBLIC_NASA_API_KEY` (set in
+ * `.env`), and fall back to NASA's shared `DEMO_KEY` for zero-config dev.
+ * Expo inlines `EXPO_PUBLIC_*` vars at bundle time.
+ */
+export const DEFAULT_API_KEY =
+  process.env.EXPO_PUBLIC_NASA_API_KEY || 'DEMO_KEY';
 
 /** Strips the surrounding parentheses NASA wraps around many designations. */
 function cleanName(name: string): string {

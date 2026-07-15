@@ -1,20 +1,26 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Animated, View } from 'react-native';
+import { Animated, Easing, View } from 'react-native';
 import Svg, {
   Circle,
   Defs,
   G,
   Line,
-  Path,
   RadialGradient,
   Stop,
   Text as SvgText,
 } from 'react-native-svg';
 import { colors } from '../theme/colors';
 import { Asteroid } from '../types/neo';
-import { angleFromId, clamp, describeArc, polarToCartesian } from '../utils/geometry';
+import { angleFromId, clamp, polarToCartesian } from '../utils/geometry';
 
 const AnimatedG = Animated.createAnimatedComponent(G);
+
+// Precomputed fading tail for the radar sweep: a fan of lines trailing the
+// leading edge, each dimmer than the last, so it reads as a smooth glowing wipe.
+const SWEEP_TAIL = Array.from({ length: 22 }, (_, i) => ({
+  offset: i * 2.6, // degrees behind the leading edge
+  opacity: 0.5 * Math.pow(1 - i / 22, 1.6),
+}));
 
 interface RadarViewProps {
   asteroids: Asteroid[];
@@ -58,6 +64,7 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
       Animated.timing(spin, {
         toValue: 1,
         duration: 4000,
+        easing: Easing.linear,
         useNativeDriver: false,
       }),
     );
@@ -91,10 +98,6 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
             <Stop offset="0" stopColor="#10202A" />
             <Stop offset="1" stopColor={colors.spaceBlack} />
           </RadialGradient>
-          <RadialGradient id="sweepGrad" cx="50%" cy="50%" r="50%">
-            <Stop offset="0" stopColor={colors.accentBlue} stopOpacity={0.35} />
-            <Stop offset="1" stopColor={colors.accentBlue} stopOpacity={0} />
-          </RadialGradient>
         </Defs>
 
         {/* Backdrop */}
@@ -117,22 +120,40 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
         <Line x1={cx} y1={cy - maxR} x2={cx} y2={cy + maxR} stroke={colors.gridLineFaint} strokeWidth={1} />
         <Line x1={cx - maxR} y1={cy} x2={cx + maxR} y2={cy} stroke={colors.gridLineFaint} strokeWidth={1} />
 
-        {/* Rotating sweep */}
+        {/* Rotating sweep: bright leading edge with a smoothly fading tail */}
         <AnimatedG originX={cx} originY={cy} rotation={sweepRotation as unknown as number}>
-          <Path
-            d={`M ${cx} ${cy} L ${polarToCartesian(cx, cy, maxR, 90).x} ${
-              polarToCartesian(cx, cy, maxR, 90).y
-            } ${describeArc(cx, cy, maxR, 90, 40)} Z`}
-            fill="url(#sweepGrad)"
-          />
+          {SWEEP_TAIL.map((seg) => {
+            const p = polarToCartesian(cx, cy, maxR, 90 - seg.offset);
+            return (
+              <Line
+                key={seg.offset}
+                x1={cx}
+                y1={cy}
+                x2={p.x}
+                y2={p.y}
+                stroke={colors.accentBlue}
+                strokeWidth={2}
+                strokeOpacity={seg.opacity}
+                strokeLinecap="round"
+              />
+            );
+          })}
+          {/* Crisp leading edge + glowing tip */}
           <Line
             x1={cx}
             y1={cy}
             x2={polarToCartesian(cx, cy, maxR, 90).x}
             y2={polarToCartesian(cx, cy, maxR, 90).y}
             stroke={colors.accentBlue}
-            strokeWidth={2}
-            strokeOpacity={0.8}
+            strokeWidth={2.5}
+            strokeOpacity={0.95}
+            strokeLinecap="round"
+          />
+          <Circle
+            cx={polarToCartesian(cx, cy, maxR, 90).x}
+            cy={polarToCartesian(cx, cy, maxR, 90).y}
+            r={3}
+            fill={colors.accentBlue}
           />
         </AnimatedG>
 
