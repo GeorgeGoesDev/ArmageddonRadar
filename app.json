@@ -13,7 +13,8 @@
         {
           "color": "#66FCF1"
         }
-      ]
+      ],
+      "expo-image"
     ],
     "ios": {
       "supportsTablet": true,

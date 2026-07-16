@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, Share, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, Share, Text, useWindowDimensions, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Asteroid } from '../types/neo';
 import { colors } from '../theme/colors';
 import { getThreatLevel } from '../utils/threat';
 import { describeDiameter } from '../data/diameterComparisons';
-import { formatInt } from '../utils/units';
+import { formatInt, KM_TO_MILES } from '../utils/units';
 import { formatLocalDateTime, formatLocalTime } from '../utils/dates';
 import { isExpoGo, scheduleApproachReminder } from '../utils/notifications';
 import { useFormatters, useThresholds } from '../settings/useFormatters';
+import { useNeoDetail } from '../hooks/useNeoDetail';
+import { ApproachTimeline } from '../components/ApproachTimeline';
 
 interface DetailSheetProps {
   asteroid: Asteroid | null;
@@ -44,6 +46,8 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
   const [reminder, setReminder] = useState<ReminderState>({ status: 'idle' });
   const fmt = useFormatters();
   const thresholds = useThresholds();
+  const { width } = useWindowDimensions();
+  const detail = useNeoDetail(asteroid?.id ?? null);
 
   if (!asteroid) return null;
   const threat = getThreatLevel(asteroid.missLunar, thresholds);
@@ -122,6 +126,46 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
             <DataRow label="Miss distance" value={fmt.distanceFromLunar(asteroid.missLunar, asteroid.missKm, asteroid.missMiles)} />
             <DataRow label="Estimated diameter" value={`${formatInt(asteroid.diameterMinM)} – ${formatInt(asteroid.diameterMaxM)} m`} />
             <DataRow label="Size, roughly" value={describeDiameter(asteroid.diameterAvgM)} />
+
+            {/* Extended detail from /neo/{id} */}
+            {detail.isLoading && (
+              <View className="py-4 items-center"><ActivityIndicator color={colors.accentBlue} /></View>
+            )}
+            {detail.isError && (
+              <Text className="py-4 text-center text-xs" style={{ color: colors.textMuted }}>
+                Extended orbital data unavailable.
+              </Text>
+            )}
+            {detail.data && (
+              <>
+                <Text className="mt-6 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>Orbital elements</Text>
+                <DataRow label="Semi-major axis" value={`${detail.data.orbital.semiMajorAxisAu.toFixed(3)} AU`} />
+                <DataRow label="Eccentricity" value={detail.data.orbital.eccentricity.toFixed(3)} />
+                <DataRow label="Inclination" value={`${detail.data.orbital.inclinationDeg.toFixed(1)}°`} />
+                <DataRow label="Orbital period" value={`${fmt.int(detail.data.orbital.orbitalPeriodDays)} days`} />
+                <DataRow label="Perihelion / aphelion" value={`${detail.data.orbital.perihelionAu.toFixed(2)} / ${detail.data.orbital.aphelionAu.toFixed(2)} AU`} />
+                <DataRow label="Orbit class" value={detail.data.orbital.orbitClassType} />
+
+                {detail.data.approaches.length > 0 && (
+                  <>
+                    <Text className="mt-6 mb-2 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>Approach timeline</Text>
+                    <ApproachTimeline approaches={detail.data.approaches} width={width - 40} />
+                    <Text className="mt-4 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>Close-approach history</Text>
+                    {detail.data.approaches.slice(0, 20).map((a, i) => (
+                      <View key={i} className="flex-row justify-between py-2" style={{ borderBottomWidth: 1, borderBottomColor: colors.gridLineFaint }}>
+                        <Text className="text-xs" style={{ color: colors.textMuted }}>{a.dateFull}</Text>
+                        <Text className="text-xs font-semibold" style={{ color: colors.textPrimary }}>{fmt.distanceFromLunar(a.missLunar, a.missKm, a.missKm * KM_TO_MILES)}</Text>
+                      </View>
+                    ))}
+                  </>
+                )}
+
+                <Text className="mt-6 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>More</Text>
+                <DataRow label="Orbit class detail" value={detail.data.orbital.orbitClassDescription} />
+                <DataRow label="First / last observed" value={`${detail.data.orbital.firstObservation} → ${detail.data.orbital.lastObservation}`} />
+                <DataRow label="Absolute magnitude (H)" value={detail.data.absoluteMagnitude.toFixed(1)} />
+              </>
+            )}
 
             {/* Reminder */}
             <Pressable

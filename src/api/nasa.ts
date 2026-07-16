@@ -1,5 +1,6 @@
 import { Asteroid, NeoFeedResponse, NeoObject } from '../types/neo';
 import { getLocalDateKey } from '../utils/dates';
+import { parseNumber as num } from '../utils/parseNumber';
 
 export const NASA_FEED_URL = 'https://api.nasa.gov/neo/rest/v1/feed';
 
@@ -14,11 +15,6 @@ export const DEFAULT_API_KEY =
 /** Strips the surrounding parentheses NASA wraps around many designations. */
 function cleanName(name: string): string {
   return name.replace(/^\(|\)$/g, '').trim();
-}
-
-function num(value: string | number | undefined, fallback = 0): number {
-  const n = typeof value === 'number' ? value : parseFloat(value ?? '');
-  return Number.isFinite(n) ? n : fallback;
 }
 
 /** Normalises a raw NeoWs object into the lean, fully-parsed `Asteroid` model. */
