@@ -14,14 +14,23 @@ const c = mk({ id: 'c', displayName: 'Ceres bit', missLunar: 8, diameterAvgM: 90
 
 describe('applyListControls', () => {
   const all = [a, b, c];
-  it('sorts closest by default', () => {
+  it('sorts closest first by default', () => {
     expect(applyListControls(all, DEFAULT_CONTROLS).map((x) => x.id)).toEqual(['b', 'a', 'c']);
   });
-  it('sorts largest', () => {
-    expect(applyListControls(all, { ...DEFAULT_CONTROLS, sort: 'largest' }).map((x) => x.id)).toEqual(['c', 'a', 'b']);
+  it('sorts farthest first', () => {
+    expect(applyListControls(all, { ...DEFAULT_CONTROLS, sortField: 'distance', sortDir: 'desc' }).map((x) => x.id)).toEqual(['c', 'a', 'b']);
   });
-  it('sorts fastest', () => {
-    expect(applyListControls(all, { ...DEFAULT_CONTROLS, sort: 'fastest' }).map((x) => x.id)).toEqual(['a', 'b', 'c']);
+  it('sorts largest / smallest', () => {
+    expect(applyListControls(all, { ...DEFAULT_CONTROLS, sortField: 'size', sortDir: 'desc' }).map((x) => x.id)).toEqual(['c', 'a', 'b']);
+    expect(applyListControls(all, { ...DEFAULT_CONTROLS, sortField: 'size', sortDir: 'asc' }).map((x) => x.id)).toEqual(['b', 'a', 'c']);
+  });
+  it('sorts fastest / slowest', () => {
+    expect(applyListControls(all, { ...DEFAULT_CONTROLS, sortField: 'speed', sortDir: 'desc' }).map((x) => x.id)).toEqual(['a', 'b', 'c']);
+    expect(applyListControls(all, { ...DEFAULT_CONTROLS, sortField: 'speed', sortDir: 'asc' }).map((x) => x.id)).toEqual(['c', 'b', 'a']);
+  });
+  it('sorts by name A–Z / Z–A', () => {
+    expect(applyListControls(all, { ...DEFAULT_CONTROLS, sortField: 'name', sortDir: 'asc' }).map((x) => x.id)).toEqual(['a', 'b', 'c']);
+    expect(applyListControls(all, { ...DEFAULT_CONTROLS, sortField: 'name', sortDir: 'desc' }).map((x) => x.id)).toEqual(['c', 'b', 'a']);
   });
   it('searches by name (case-insensitive)', () => {
     expect(applyListControls(all, { ...DEFAULT_CONTROLS, search: 'ben' }).map((x) => x.id)).toEqual(['b']);
@@ -41,5 +50,13 @@ describe('activeFilterCount', () => {
   it('counts only active filters', () => {
     expect(activeFilterCount(DEFAULT_CONTROLS)).toBe(0);
     expect(activeFilterCount({ ...DEFAULT_CONTROLS, hazardousOnly: true, minDiameterM: 100 })).toBe(2);
+  });
+});
+
+import { SORT_OPTIONS } from '../listControls';
+describe('SORT_OPTIONS', () => {
+  it('offers 8 field+direction options with labels', () => {
+    expect(SORT_OPTIONS).toHaveLength(8);
+    expect(SORT_OPTIONS[0]).toEqual({ field: 'distance', dir: 'asc', label: 'Closest first' });
   });
 });

@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Asteroid } from '../types/neo';
 import { colors } from '../theme/colors';
 import { getThreatLevel } from '../utils/threat';
+import { asteroidColor } from '../utils/asteroidColor';
 import { describeDiameter } from '../data/diameterComparisons';
 import { formatInt, KM_TO_MILES } from '../utils/units';
 import { formatLocalDateTime, formatLocalTime } from '../utils/dates';
@@ -111,7 +112,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
               <View className="flex-row items-center flex-1">
                 <View
                   className="h-3 w-3 rounded-full mr-2"
-                  style={{ backgroundColor: threat.color }}
+                  style={{ backgroundColor: asteroidColor(asteroid.id) }}
                 />
                 <Text className="text-2xl font-extrabold" style={{ color: colors.textPrimary }} numberOfLines={1}>
                   {asteroid.displayName}
@@ -126,7 +127,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
             </Text>
           </LinearGradient>
 
-          <ScrollView className="px-5" contentContainerStyle={{ paddingBottom: 32 }}>
+          <ScrollView className="px-5" style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             {/* Orbital data */}
             <Text className="mt-4 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>
               Orbital mechanics

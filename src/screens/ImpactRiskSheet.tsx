@@ -36,7 +36,7 @@ export function ImpactRiskSheet({ visible, onClose, onSelect }: { visible: boole
               </Pressable>
             </View>
           ) : (
-            <ScrollView className="px-5" contentContainerStyle={{ paddingBottom: 32 }}>
+            <ScrollView className="px-5" style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
               {(data ?? []).map((risk, i) => (
                 <Pressable key={risk.designation} onPress={() => onSelect(risk)} className="flex-row items-center py-3" style={{ borderBottomWidth: 1, borderBottomColor: colors.gridLineFaint }}>
                   <Text className="text-xs w-6" style={{ color: colors.textMuted }}>{i + 1}</Text>

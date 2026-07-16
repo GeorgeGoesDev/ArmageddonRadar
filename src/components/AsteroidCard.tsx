@@ -5,6 +5,7 @@ import { Asteroid } from '../types/neo';
 import { colors } from '../theme/colors';
 import { describeDiameter } from '../data/diameterComparisons';
 import { useFormatters } from '../settings/useFormatters';
+import { asteroidColor } from '../utils/asteroidColor';
 
 interface AsteroidCardProps {
   asteroid: Asteroid;
@@ -65,8 +66,8 @@ export function AsteroidCard({ asteroid, selected, onPress, onDetails }: Asteroi
           <View
             className="h-2.5 w-2.5 rounded-full mr-2"
             style={{
-              backgroundColor: asteroid.hazardous ? colors.threatOrange : colors.safeGreen,
-              shadowColor: asteroid.hazardous ? colors.threatOrange : colors.safeGreen,
+              backgroundColor: asteroidColor(asteroid.id),
+              shadowColor: asteroidColor(asteroid.id),
               shadowOpacity: 0.9,
               shadowRadius: 6,
               shadowOffset: { width: 0, height: 0 },
