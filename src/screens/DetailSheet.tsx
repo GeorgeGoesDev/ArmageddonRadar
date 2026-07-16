@@ -131,6 +131,11 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
             {detail.isLoading && (
               <View className="py-4 items-center"><ActivityIndicator color={colors.accentBlue} /></View>
             )}
+            {detail.isError && (
+              <Text className="py-4 text-center text-xs" style={{ color: colors.textMuted }}>
+                Extended orbital data unavailable.
+              </Text>
+            )}
             {detail.data && (
               <>
                 <Text className="mt-6 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>Orbital elements</Text>

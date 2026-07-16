@@ -19,6 +19,7 @@ export function normalizeNeoDetail(raw: any): NeoDetail {
     lastObservation: String(od.last_observation_date ?? ''),
   };
   const approaches: ApproachEntry[] = (raw.close_approach_data ?? [])
+    .filter((a: any) => (a.orbiting_body ?? 'Earth') === 'Earth')
     .map((a: any) => ({
       epochMs: num(a.epoch_date_close_approach),
       dateFull: String(a.close_approach_date_full ?? ''),

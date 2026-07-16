@@ -23,4 +23,17 @@ describe('normalizeNeoDetail', () => {
     expect(d.approaches[0].missLunar).toBe(3);
     expect(d.isHazardous).toBe(false);
   });
+
+  it('excludes non-Earth close approaches', () => {
+    const rawWithMars = {
+      ...raw,
+      close_approach_data: [
+        { epoch_date_close_approach: 200, close_approach_date_full: 'b', miss_distance: { lunar: '5', kilometers: '2' }, relative_velocity: { kilometers_per_hour: '10' }, orbiting_body: 'Earth' },
+        { epoch_date_close_approach: 300, close_approach_date_full: 'c', miss_distance: { lunar: '7', kilometers: '3' }, relative_velocity: { kilometers_per_hour: '11' }, orbiting_body: 'Mars' },
+      ],
+    };
+    const d = normalizeNeoDetail(rawWithMars);
+    expect(d.approaches.length).toBe(1);
+    expect(d.approaches[0].orbitingBody).toBe('Earth');
+  });
 });
