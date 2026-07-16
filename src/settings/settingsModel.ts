@@ -7,6 +7,8 @@ export interface Settings {
   dangerLD: number;
   safeLD: number;
   apiKeyOverride: string | null;
+  hapticsEnabled: boolean;
+  onboardingComplete: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -15,6 +17,8 @@ export const DEFAULT_SETTINGS: Settings = {
   dangerLD: 1,
   safeLD: 5,
   apiKeyOverride: null,
+  hapticsEnabled: true,
+  onboardingComplete: false,
 };
 
 const DIST: DistanceUnit[] = ['lunar', 'km', 'miles'];
@@ -39,6 +43,8 @@ export function mergeSettings(stored: unknown): Settings {
     dangerLD,
     safeLD,
     apiKeyOverride: typeof s.apiKeyOverride === 'string' && s.apiKeyOverride.trim() ? s.apiKeyOverride.trim() : null,
+    hapticsEnabled: typeof s.hapticsEnabled === 'boolean' ? s.hapticsEnabled : DEFAULT_SETTINGS.hapticsEnabled,
+    onboardingComplete: typeof s.onboardingComplete === 'boolean' ? s.onboardingComplete : DEFAULT_SETTINGS.onboardingComplete,
   };
 }
 
