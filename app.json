@@ -14,7 +14,8 @@
           "color": "#66FCF1"
         }
       ],
-      "expo-image"
+      "expo-image",
+      "expo-sharing"
     ],
     "ios": {
       "supportsTablet": true,

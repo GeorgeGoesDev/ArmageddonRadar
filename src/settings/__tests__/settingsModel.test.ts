@@ -7,7 +7,7 @@ describe('mergeSettings', () => {
   });
   it('keeps valid stored fields', () => {
     const s = mergeSettings({ distanceUnit: 'km', velocityUnit: 'mph', dangerLD: 2, safeLD: 8, apiKeyOverride: 'K' });
-    expect(s).toEqual({ distanceUnit: 'km', velocityUnit: 'mph', dangerLD: 2, safeLD: 8, apiKeyOverride: 'K' });
+    expect(s).toEqual({ distanceUnit: 'km', velocityUnit: 'mph', dangerLD: 2, safeLD: 8, apiKeyOverride: 'K', hapticsEnabled: true, onboardingComplete: false });
   });
   it('rejects invalid unit values', () => {
     expect(mergeSettings({ distanceUnit: 'furlongs' }).distanceUnit).toBe('lunar');
@@ -18,6 +18,16 @@ describe('mergeSettings', () => {
   });
   it('trims apiKeyOverride when storing', () => {
     expect(mergeSettings({ apiKeyOverride: '  K  ' }).apiKeyOverride).toBe('K');
+  });
+  it('defaults the new delight fields', () => {
+    const s = mergeSettings({});
+    expect(s.hapticsEnabled).toBe(true);
+    expect(s.onboardingComplete).toBe(false);
+  });
+  it('keeps valid booleans and rejects non-booleans', () => {
+    expect(mergeSettings({ hapticsEnabled: false, onboardingComplete: true }))
+      .toMatchObject({ hapticsEnabled: false, onboardingComplete: true });
+    expect(mergeSettings({ hapticsEnabled: 'yes' as unknown }).hapticsEnabled).toBe(true);
   });
 });
 

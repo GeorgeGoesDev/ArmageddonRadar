@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -22,6 +22,10 @@ import { ImpactRiskSheet } from './ImpactRiskSheet';
 import { SentryDetailSheet } from './SentryDetailSheet';
 import { SentryRisk } from '../types/sentry';
 import { applyListControls, DEFAULT_CONTROLS, ListControls } from '../utils/listControls';
+import { useSettings } from '../settings/SettingsContext';
+import { useThresholds } from '../settings/useFormatters';
+import { getThreatLevel } from '../utils/threat';
+import { hapticWarning } from '../utils/haptics';
 
 function Header({ onWeek, onSettings, onRisk }: { onWeek: () => void; onSettings: () => void; onRisk: () => void }) {
   return (
@@ -71,6 +75,19 @@ export function DashboardScreen() {
   const dayList = useMemo<Asteroid[]>(() => (week ? week[selectedDateKey] ?? [] : []), [week, selectedDateKey]);
   const visibleList = useMemo(() => applyListControls(dayList, controls), [dayList, controls]);
   const closest = useMemo(() => (dayList.length ? dayList.reduce((a, b) => (a.missLunar <= b.missLunar ? a : b)) : null), [dayList]);
+
+  const { settings } = useSettings();
+  const thresholds = useThresholds();
+  const buzzedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!closest) return;
+    const danger = closest.hazardous || getThreatLevel(closest.missLunar, thresholds).zone === 'danger';
+    if (danger && buzzedFor.current !== selectedDateKey) {
+      buzzedFor.current = selectedDateKey;
+      hapticWarning(settings.hapticsEnabled);
+    }
+  }, [closest, selectedDateKey, thresholds, settings.hapticsEnabled]);
+
   const effectiveSelectedId = selectedId ?? closest?.id ?? null;
 
   const openDetails = (a: Asteroid) => { setSelectedId(a.id); setDetailAsteroid(a); setDetailVisible(true); };

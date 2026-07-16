@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Linking, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 import Constants from 'expo-constants';
 import { useQueryClient } from '@tanstack/react-query';
@@ -71,6 +71,19 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
             <Slider minimumValue={0.2} maximumValue={Math.min(3, settings.safeLD - 0.5)} step={0.1} value={settings.dangerLD} onValueChange={(v) => update({ dangerLD: Math.round(v * 10) / 10 })} minimumTrackTintColor={colors.threatOrange} maximumTrackTintColor={colors.spaceSlate} thumbTintColor={colors.threatOrange} />
             <Text className="mt-2 mb-1 text-xs" style={{ color: colors.textMuted }}>Completely safe above {settings.safeLD.toFixed(1)} LD</Text>
             <Slider minimumValue={Math.max(3, settings.dangerLD + 0.5)} maximumValue={15} step={0.5} value={settings.safeLD} onValueChange={(v) => update({ safeLD: Math.round(v * 2) / 2 })} minimumTrackTintColor={colors.safeGreen} maximumTrackTintColor={colors.spaceSlate} thumbTintColor={colors.safeGreen} />
+
+            <Text className="mt-5 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>Feedback</Text>
+            <View className="flex-row items-center justify-between py-1">
+              <Text style={{ color: colors.textPrimary }}>Haptics</Text>
+              <Switch
+                value={settings.hapticsEnabled}
+                onValueChange={(v) => update({ hapticsEnabled: v })}
+                trackColor={{ true: colors.accentBlue, false: colors.spaceSlate }}
+              />
+            </View>
+            <Pressable onPress={() => { update({ onboardingComplete: false }); onClose(); }} className="py-2">
+              <Text style={{ color: colors.accentBlue }}>Replay intro</Text>
+            </Pressable>
 
             <Text className="mt-5 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>NASA API key</Text>
             <TextInput value={keyDraft} onChangeText={setKeyDraft} placeholder="DEMO_KEY (built-in)" placeholderTextColor={colors.textMuted} autoCapitalize="none" autoCorrect={false} className="rounded-xl px-3 py-2 text-sm" style={{ color: colors.textPrimary, backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.gridLineFaint }} />

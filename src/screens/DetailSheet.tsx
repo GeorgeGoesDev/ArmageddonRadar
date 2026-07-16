@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, Share, Text, useWindowDimensions, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,6 +12,9 @@ import { isExpoGo, scheduleApproachReminder } from '../utils/notifications';
 import { useFormatters, useThresholds } from '../settings/useFormatters';
 import { useNeoDetail } from '../hooks/useNeoDetail';
 import { ApproachTimeline } from '../components/ApproachTimeline';
+import { ImpactReportSheet } from './ImpactReportSheet';
+import { hapticWarning, hapticSuccess } from '../utils/haptics';
+import { useSettings } from '../settings/SettingsContext';
 
 interface DetailSheetProps {
   asteroid: Asteroid | null;
@@ -48,6 +51,12 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
   const thresholds = useThresholds();
   const { width } = useWindowDimensions();
   const detail = useNeoDetail(asteroid?.id ?? null);
+  const { settings } = useSettings();
+  const [simVisible, setSimVisible] = useState(false);
+
+  useEffect(() => {
+    if (visible && asteroid?.hazardous) hapticWarning(settings.hapticsEnabled);
+  }, [visible, asteroid?.id, asteroid?.hazardous, settings.hapticsEnabled]);
 
   if (!asteroid) return null;
   const threat = getThreatLevel(asteroid.missLunar, thresholds);
@@ -62,6 +71,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
           ? `Approach already passed today — demo reminder set for ${formatLocalTime(res.fireDate.getTime())}.`
           : `Reminder set for ${formatLocalDateTime(res.fireDate.getTime())}.`,
       });
+      hapticSuccess(settings.hapticsEnabled);
     } catch (e) {
       setReminder({
         status: 'error',
@@ -199,6 +209,16 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
               </Text>
             )}
 
+            {/* Simulate impact */}
+            <Pressable
+              onPress={() => setSimVisible(true)}
+              className="mt-3 rounded-2xl px-4 py-4 flex-row items-center justify-center"
+              style={{ backgroundColor: colors.threatOrange }}
+            >
+              <MaterialCommunityIcons name="bomb" size={20} color={colors.spaceBlack} />
+              <Text className="ml-2 text-base font-bold" style={{ color: colors.spaceBlack }}>💥 Simulate impact</Text>
+            </Pressable>
+
             {/* Share */}
             <Pressable
               onPress={handleShare}
@@ -213,6 +233,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
           </ScrollView>
         </View>
       </View>
+      <ImpactReportSheet asteroid={asteroid} visible={simVisible} onClose={() => setSimVisible(false)} />
     </Modal>
   );
 }
