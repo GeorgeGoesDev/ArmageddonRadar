@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { torinoColor } from '../utils/torino';
-import { colors } from '../theme/colors';
 
 export function TorinoChip({ level }: { level: number }) {
   const color = torinoColor(level);

@@ -6,7 +6,7 @@ import { Asteroid } from '../types/neo';
 import { colors } from '../theme/colors';
 import { getThreatLevel } from '../utils/threat';
 import { describeDiameter } from '../data/diameterComparisons';
-import { formatInt } from '../utils/units';
+import { formatInt, KM_TO_MILES } from '../utils/units';
 import { formatLocalDateTime, formatLocalTime } from '../utils/dates';
 import { isExpoGo, scheduleApproachReminder } from '../utils/notifications';
 import { useFormatters, useThresholds } from '../settings/useFormatters';
@@ -149,7 +149,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
                     {detail.data.approaches.slice(0, 20).map((a, i) => (
                       <View key={i} className="flex-row justify-between py-2" style={{ borderBottomWidth: 1, borderBottomColor: colors.gridLineFaint }}>
                         <Text className="text-xs" style={{ color: colors.textMuted }}>{a.dateFull}</Text>
-                        <Text className="text-xs font-semibold" style={{ color: colors.textPrimary }}>{fmt.distanceFromLunar(a.missLunar, a.missKm, a.missKm * 0.621371)}</Text>
+                        <Text className="text-xs font-semibold" style={{ color: colors.textPrimary }}>{fmt.distanceFromLunar(a.missLunar, a.missKm, a.missKm * KM_TO_MILES)}</Text>
                       </View>
                     ))}
                   </>

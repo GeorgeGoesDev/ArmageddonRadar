@@ -1,11 +1,7 @@
 import { SentryDetail, SentryRisk } from '../types/sentry';
+import { parseNumber as num } from '../utils/parseNumber';
 
 const SENTRY_URL = 'https://ssd-api.jpl.nasa.gov/sentry.api';
-
-function num(v: unknown, fallback = 0): number {
-  const n = typeof v === 'number' ? v : parseFloat(String(v ?? ''));
-  return Number.isFinite(n) ? n : fallback;
-}
 
 /** Sentry gives diameter in km; the app works in metres. */
 export function normalizeSentryRow(row: Record<string, unknown>): SentryRisk {

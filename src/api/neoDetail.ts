@@ -1,12 +1,8 @@
 import { NeoDetail, ApproachEntry, OrbitalElements } from '../types/neoDetail';
 import { DEFAULT_API_KEY } from './nasa';
+import { parseNumber as num } from '../utils/parseNumber';
 
 const NEO_URL = 'https://api.nasa.gov/neo/rest/v1/neo';
-
-function num(v: unknown, fallback = 0): number {
-  const n = typeof v === 'number' ? v : parseFloat(String(v ?? ''));
-  return Number.isFinite(n) ? n : fallback;
-}
 
 export function normalizeNeoDetail(raw: any): NeoDetail {
   const od = raw.orbital_data ?? {};
