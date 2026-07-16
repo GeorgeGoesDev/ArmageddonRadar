@@ -17,6 +17,7 @@ import { ListControlsBar } from '../components/ListControlsBar';
 import { DetailSheet } from './DetailSheet';
 import { WeekSheet } from './WeekSheet';
 import { SettingsSheet } from './SettingsSheet';
+import { WatchlistSheet } from './WatchlistSheet';
 import { ApodBanner } from '../components/ApodBanner';
 import { ImpactRiskSheet } from './ImpactRiskSheet';
 import { SentryDetailSheet } from './SentryDetailSheet';
@@ -27,7 +28,7 @@ import { useThresholds } from '../settings/useFormatters';
 import { getThreatLevel } from '../utils/threat';
 import { hapticWarning } from '../utils/haptics';
 
-function Header({ onWeek, onSettings, onRisk }: { onWeek: () => void; onSettings: () => void; onRisk: () => void }) {
+function Header({ onWatchlist, onWeek, onSettings, onRisk }: { onWatchlist: () => void; onWeek: () => void; onSettings: () => void; onRisk: () => void }) {
   return (
     <View className="px-4 pt-2 pb-3">
       <View className="flex-row items-center justify-between">
@@ -35,6 +36,7 @@ function Header({ onWeek, onSettings, onRisk }: { onWeek: () => void; onSettings
           <MaterialCommunityIcons name="radar" size={24} color={colors.accentBlue} />
           <Text className="ml-2 text-xl font-extrabold tracking-widest" style={{ color: colors.textPrimary }}>ARMAGEDDON RADAR</Text>
         </View>
+        <Pressable onPress={onWatchlist} hitSlop={8} className="ml-2"><MaterialCommunityIcons name="star" size={22} color={colors.threatYellow} /></Pressable>
         <Pressable onPress={onRisk} hitSlop={8} className="ml-2"><MaterialCommunityIcons name="skull-outline" size={22} color={colors.threatOrange} /></Pressable>
         <Pressable onPress={onWeek} hitSlop={8} className="ml-2"><MaterialCommunityIcons name="calendar-week" size={22} color={colors.accentBlue} /></Pressable>
         <Pressable onPress={onSettings} hitSlop={8} className="ml-4"><MaterialCommunityIcons name="cog" size={22} color={colors.accentBlue} /></Pressable>
@@ -68,6 +70,7 @@ export function DashboardScreen() {
   const [weekVisible, setWeekVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [riskVisible, setRiskVisible] = useState(false);
+  const [watchlistVisible, setWatchlistVisible] = useState(false);
   const [sentryRisk, setSentryRisk] = useState<SentryRisk | null>(null);
 
   const { data: week, isLoading, isError, error, refetch, isRefetching } = useNeoWeek({ useMock });
@@ -96,7 +99,7 @@ export function DashboardScreen() {
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.spaceBlack }} edges={['top']}>
       <StatusBar style="light" />
       <ApodBanner />
-      <Header onWeek={() => setWeekVisible(true)} onSettings={() => setSettingsVisible(true)} onRisk={() => setRiskVisible(true)} />
+      <Header onWatchlist={() => setWatchlistVisible(true)} onWeek={() => setWeekVisible(true)} onSettings={() => setSettingsVisible(true)} onRisk={() => setRiskVisible(true)} />
 
       {isLoading ? (
         <LoadingSkeleton />
@@ -147,6 +150,7 @@ export function DashboardScreen() {
       <DetailSheet asteroid={detailAsteroid} visible={detailVisible} onClose={() => setDetailVisible(false)} />
       {week && <WeekSheet visible={weekVisible} week={week} onClose={() => setWeekVisible(false)} onSelectDay={(k) => { setSelectedDateKey(k); setSelectedId(null); }} />}
       <SettingsSheet visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
+      <WatchlistSheet visible={watchlistVisible} week={week} onClose={() => setWatchlistVisible(false)} onOpen={(a) => { setWatchlistVisible(false); openDetails(a); }} />
       <ImpactRiskSheet visible={riskVisible} onClose={() => setRiskVisible(false)} onSelect={(r) => setSentryRisk(r)} />
       <SentryDetailSheet risk={sentryRisk} onClose={() => setSentryRisk(null)} />
     </SafeAreaView>
