@@ -43,3 +43,6 @@ yarn-error.*
 
 # subagent-driven-development scratch
 .superpowers/
+
+# JetBrains IDE
+.idea/
