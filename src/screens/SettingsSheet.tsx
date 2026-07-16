@@ -85,6 +85,43 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
               <Text style={{ color: colors.accentBlue }}>Replay intro</Text>
             </Pressable>
 
+            <Text className="mt-5 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>Notifications</Text>
+            <View className="flex-row items-center justify-between py-1">
+              <Text style={{ color: colors.textPrimary }}>Daily digest</Text>
+              <Switch
+                value={settings.dailyDigestEnabled}
+                onValueChange={(v) => update({ dailyDigestEnabled: v })}
+                trackColor={{ true: colors.accentBlue, false: colors.spaceSlate }}
+              />
+            </View>
+            {settings.dailyDigestEnabled && (
+              <View className="flex-row items-center justify-between py-1">
+                <Text className="text-xs" style={{ color: colors.textMuted }}>Digest time</Text>
+                <View className="flex-row items-center">
+                  <Pressable onPress={() => update({ digestHour: (settings.digestHour + 23) % 24 })} hitSlop={8} className="px-2">
+                    <MaterialCommunityIcons name="minus-circle-outline" size={22} color={colors.accentBlue} />
+                  </Pressable>
+                  <Text className="w-14 text-center text-sm font-semibold" style={{ color: colors.textPrimary }}>
+                    {String(settings.digestHour).padStart(2, '0')}:00
+                  </Text>
+                  <Pressable onPress={() => update({ digestHour: (settings.digestHour + 1) % 24 })} hitSlop={8} className="px-2">
+                    <MaterialCommunityIcons name="plus-circle-outline" size={22} color={colors.accentBlue} />
+                  </Pressable>
+                </View>
+              </View>
+            )}
+            <View className="flex-row items-center justify-between py-1">
+              <Text style={{ color: colors.textPrimary }}>Smart alerts</Text>
+              <Switch
+                value={settings.smartAlertsEnabled}
+                onValueChange={(v) => update({ smartAlertsEnabled: v })}
+                trackColor={{ true: colors.accentBlue, false: colors.spaceSlate }}
+              />
+            </View>
+            <Text className="text-[11px] mb-1" style={{ color: colors.textMuted }}>
+              Auto-notify when an asteroid comes within your danger distance. Needs a real build (not Expo Go).
+            </Text>
+
             <Text className="mt-5 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>NASA API key</Text>
             <TextInput value={keyDraft} onChangeText={setKeyDraft} placeholder="DEMO_KEY (built-in)" placeholderTextColor={colors.textMuted} autoCapitalize="none" autoCorrect={false} className="rounded-xl px-3 py-2 text-sm" style={{ color: colors.textPrimary, backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.gridLineFaint }} />
             <Pressable onPress={saveKey} className="mt-2 rounded-xl py-2 items-center" style={{ backgroundColor: colors.accentPurple }}>
