@@ -9,6 +9,7 @@ import Svg, {
   Stop,
   Text as SvgText,
 } from 'react-native-svg';
+import { asteroidColor } from '../utils/asteroidColor';
 import { colors } from '../theme/colors';
 import { Asteroid } from '../types/neo';
 import { angleFromId, clamp, polarToCartesian } from '../utils/geometry';
@@ -150,14 +151,13 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
             />
           ))}
 
-        {/* Asteroid dots */}
+        {/* Asteroid dots — fill is the object's identity colour; hazard/selection
+            move to the ring (selection also has the pulsing halo above). */}
         {dots.map((d) => {
           const selected = d.asteroid.id === selectedId;
-          const dotColor = selected
-            ? colors.threatOrange
-            : d.asteroid.hazardous
-            ? colors.threatYellow
-            : colors.accentBlue;
+          const fill = asteroidColor(d.asteroid.id);
+          const ringColor = selected || d.asteroid.hazardous ? colors.threatOrange : colors.spaceBlack;
+          const ringWidth = selected ? 3 : d.asteroid.hazardous ? 2 : 1;
           return (
             <G key={d.asteroid.id} onPress={() => onSelect(d.asteroid.id)}>
               {/* Enlarged invisible hit area */}
@@ -166,9 +166,9 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
                 cx={d.x}
                 cy={d.y}
                 r={selected ? 7 : 4.5}
-                fill={dotColor}
-                stroke={colors.spaceBlack}
-                strokeWidth={selected ? 2 : 1}
+                fill={fill}
+                stroke={ringColor}
+                strokeWidth={ringWidth}
               />
             </G>
           );
