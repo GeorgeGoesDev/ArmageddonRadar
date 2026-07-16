@@ -126,7 +126,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
             </Text>
           </LinearGradient>
 
-          <ScrollView className="px-5" contentContainerStyle={{ paddingBottom: 32 }}>
+          <ScrollView className="px-5" style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             {/* Orbital data */}
             <Text className="mt-4 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>
               Orbital mechanics

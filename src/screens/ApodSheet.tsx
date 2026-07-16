@@ -15,7 +15,7 @@ export function ApodSheet({ apod, visible, onClose }: { apod: Apod | null; visib
             <Text className="text-xs uppercase tracking-widest flex-1" style={{ color: colors.accentBlue }}>Astronomy Picture · {apod.date}</Text>
             <Pressable onPress={onClose} hitSlop={12}><MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} /></Pressable>
           </View>
-          <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+          <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             {apod.mediaType === 'image' ? (
               <Image source={{ uri: apod.hdImageUrl || apod.imageUrl }} style={{ width: '100%', height: 260 }} contentFit="cover" transition={200} />
             ) : (

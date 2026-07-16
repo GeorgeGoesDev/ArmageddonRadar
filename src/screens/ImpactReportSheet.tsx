@@ -41,7 +41,7 @@ export function ImpactReportSheet({ asteroid, visible, onClose }: { asteroid: As
           <View className="flex-row items-center justify-end px-4 pt-3">
             <Pressable onPress={onClose} hitSlop={12}><MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} /></Pressable>
           </View>
-          <ScrollView contentContainerStyle={{ alignItems: 'center', paddingBottom: 24 }}>
+          <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ alignItems: 'center', paddingBottom: 24 }}>
             <View ref={shotRef} collapsable={false} style={{ backgroundColor: colors.spaceBlack, borderRadius: 16, overflow: 'hidden' }}>
               <ImpactReport asteroid={asteroid} width={cardWidth} />
             </View>

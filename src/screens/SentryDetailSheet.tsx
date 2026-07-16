@@ -35,7 +35,7 @@ export function SentryDetailSheet({ risk, onClose }: { risk: SentryRisk | null; 
             <Pressable onPress={onClose} hitSlop={12}><MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} /></Pressable>
           </View>
 
-          <ScrollView className="px-5" contentContainerStyle={{ paddingBottom: 32 }}>
+          <ScrollView className="px-5" style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             <View className="flex-row items-center mb-2" style={{ gap: 8 }}>
               <TorinoChip level={risk.torinoMax} />
               <Text className="text-xs" style={{ color: colors.textMuted }}>{TORINO_CAPTION[risk.torinoMax] ?? 'Elevated — merits attention by astronomers.'}</Text>

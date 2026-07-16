@@ -51,7 +51,7 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
               <MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} />
             </Pressable>
           </View>
-          <ScrollView className="px-5" contentContainerStyle={{ paddingBottom: 32 }}>
+          <ScrollView className="px-5" style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             <Text className="mt-3 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>Distance unit</Text>
             <Segmented<DistanceUnit>
               options={[{ key: 'lunar', label: 'Lunar' }, { key: 'km', label: 'km' }, { key: 'miles', label: 'miles' }]}
