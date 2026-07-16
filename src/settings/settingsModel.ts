@@ -9,6 +9,9 @@ export interface Settings {
   apiKeyOverride: string | null;
   hapticsEnabled: boolean;
   onboardingComplete: boolean;
+  dailyDigestEnabled: boolean;
+  digestHour: number;
+  smartAlertsEnabled: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -19,6 +22,9 @@ export const DEFAULT_SETTINGS: Settings = {
   apiKeyOverride: null,
   hapticsEnabled: true,
   onboardingComplete: false,
+  dailyDigestEnabled: true,
+  digestHour: 9,
+  smartAlertsEnabled: true,
 };
 
 const DIST: DistanceUnit[] = ['lunar', 'km', 'miles'];
@@ -26,6 +32,10 @@ const VEL: VelocityUnit[] = ['kph', 'mph'];
 
 function num(v: unknown, fallback: number): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+}
+
+function hour(v: unknown, fallback: number): number {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 23 ? v : fallback;
 }
 
 /** Validates arbitrary stored JSON into a complete Settings object. */
@@ -45,6 +55,9 @@ export function mergeSettings(stored: unknown): Settings {
     apiKeyOverride: typeof s.apiKeyOverride === 'string' && s.apiKeyOverride.trim() ? s.apiKeyOverride.trim() : null,
     hapticsEnabled: typeof s.hapticsEnabled === 'boolean' ? s.hapticsEnabled : DEFAULT_SETTINGS.hapticsEnabled,
     onboardingComplete: typeof s.onboardingComplete === 'boolean' ? s.onboardingComplete : DEFAULT_SETTINGS.onboardingComplete,
+    dailyDigestEnabled: typeof s.dailyDigestEnabled === 'boolean' ? s.dailyDigestEnabled : DEFAULT_SETTINGS.dailyDigestEnabled,
+    digestHour: hour(s.digestHour, DEFAULT_SETTINGS.digestHour),
+    smartAlertsEnabled: typeof s.smartAlertsEnabled === 'boolean' ? s.smartAlertsEnabled : DEFAULT_SETTINGS.smartAlertsEnabled,
   };
 }
 
