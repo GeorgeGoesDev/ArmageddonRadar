@@ -57,6 +57,17 @@ describe('planDailyDigests', () => {
   it('returns [] for an empty feed', () => {
     expect(planDailyDigests({}, 9, thresholds, now)).toEqual([]);
   });
+  it('skips a day whose digest fire instant equals `now` exactly (inclusive boundary)', () => {
+    const dayKey = '2101-03-10';
+    const digestHour = 9;
+    const [y, m, d] = dayKey.split('-').map(Number);
+    const exactNow = new Date(y, m - 1, d, digestHour, 0, 0, 0).getTime();
+    const boundaryWeek: NeoWeek = {
+      [dayKey]: [mkAst({ id: 'q', displayName: 'Quebec', missLunar: 4 })],
+    };
+    const plans = planDailyDigests(boundaryWeek, digestHour, thresholds, exactNow);
+    expect(plans).toEqual([]);
+  });
 });
 
 describe('planSmartAlerts', () => {
@@ -80,5 +91,26 @@ describe('planSmartAlerts', () => {
   it('returns [] when nothing qualifies', () => {
     const week: NeoWeek = { d1: [mkAst({ id: 'z', missLunar: 9, approachEpochMs: now + 1000 })] };
     expect(planSmartAlerts(week, 1, now)).toEqual([]);
+  });
+  it('includes an object whose missLunar exactly equals dangerLD (inclusive threshold)', () => {
+    const week: NeoWeek = {
+      d1: [mkAst({ id: 'p', missLunar: 1, approachEpochMs: now + 5_000 })],
+    };
+    expect(planSmartAlerts(week, 1, now).map((a) => a.asteroidId)).toEqual(['p']);
+  });
+  it('excludes an object whose approachEpochMs exactly equals `now` (exclusive future check)', () => {
+    const week: NeoWeek = {
+      d1: [mkAst({ id: 'p', missLunar: 0.5, approachEpochMs: now })],
+    };
+    expect(planSmartAlerts(week, 1, now)).toEqual([]);
+  });
+  it('dedupes by id keeping the earliest occurrence, even when the earliest is iterated first', () => {
+    const week: NeoWeek = {
+      d1: [mkAst({ id: 'a', missLunar: 0.5, approachEpochMs: now + 10_000 })], // earliest, inserted first
+      d2: [mkAst({ id: 'a', missLunar: 0.5, approachEpochMs: now + 30_000 })], // later, inserted second
+    };
+    const alerts = planSmartAlerts(week, 1, now);
+    expect(alerts.map((a) => a.asteroidId)).toEqual(['a']);
+    expect(alerts[0].fireDate.getTime()).toBe(now + 10_000);
   });
 });
