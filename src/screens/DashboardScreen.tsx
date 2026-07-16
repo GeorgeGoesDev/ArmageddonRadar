@@ -27,6 +27,7 @@ import { useSettings } from '../settings/SettingsContext';
 import { useThresholds } from '../settings/useFormatters';
 import { getThreatLevel } from '../utils/threat';
 import { hapticWarning } from '../utils/haptics';
+import { syncAutoNotifications } from '../utils/notificationScheduler';
 
 function Header({ onWatchlist, onWeek, onSettings, onRisk }: { onWatchlist: () => void; onWeek: () => void; onSettings: () => void; onRisk: () => void }) {
   return (
@@ -90,6 +91,14 @@ export function DashboardScreen() {
       hapticWarning(settings.hapticsEnabled);
     }
   }, [closest, selectedDateKey, thresholds, settings.hapticsEnabled]);
+
+  // Reschedule auto-notifications (daily digest + smart alerts) from the cached
+  // feed whenever it loads/changes or the relevant settings change. No-ops in
+  // Expo Go; cancels only our previously-scheduled auto set.
+  useEffect(() => {
+    if (!week) return;
+    syncAutoNotifications(week, settings, thresholds).catch(() => {});
+  }, [week, settings.dailyDigestEnabled, settings.digestHour, settings.smartAlertsEnabled, thresholds.dangerLD, thresholds.safeLD]);
 
   const effectiveSelectedId = selectedId ?? closest?.id ?? null;
 
