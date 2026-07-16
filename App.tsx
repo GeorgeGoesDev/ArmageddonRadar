@@ -8,6 +8,7 @@ import { DashboardScreen } from './src/screens/DashboardScreen';
 import { OnboardingCarousel } from './src/components/OnboardingCarousel';
 import { configureNotifications } from './src/utils/notifications';
 import { SettingsProvider, useSettings } from './src/settings/SettingsContext';
+import { WatchlistProvider } from './src/watchlist/WatchlistContext';
 import { queryClient, asyncPersister } from './src/query/persister';
 import { colors } from './src/theme/colors';
 
@@ -43,9 +44,11 @@ export default function App() {
       persistOptions={{ persister: asyncPersister, maxAge: ONE_DAY, buster: 'v1' }}
     >
       <SettingsProvider>
-        <SafeAreaProvider>
-          <Gate />
-        </SafeAreaProvider>
+        <WatchlistProvider>
+          <SafeAreaProvider>
+            <Gate />
+          </SafeAreaProvider>
+        </WatchlistProvider>
       </SettingsProvider>
     </PersistQueryClientProvider>
   );
