@@ -16,6 +16,7 @@ import { ApproachTimeline } from '../components/ApproachTimeline';
 import { ImpactReportSheet } from './ImpactReportSheet';
 import { hapticWarning, hapticSuccess } from '../utils/haptics';
 import { useSettings } from '../settings/SettingsContext';
+import { useWatchlist } from '../watchlist/WatchlistContext';
 
 interface DetailSheetProps {
   asteroid: Asteroid | null;
@@ -53,6 +54,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
   const { width } = useWindowDimensions();
   const detail = useNeoDetail(asteroid?.id ?? null);
   const { settings } = useSettings();
+  const { isWatched, toggle } = useWatchlist();
   const [simVisible, setSimVisible] = useState(false);
 
   useEffect(() => {
@@ -118,9 +120,25 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
                   {asteroid.displayName}
                 </Text>
               </View>
-              <Pressable onPress={onClose} hitSlop={12}>
-                <MaterialCommunityIcons name="close-circle" size={28} color={colors.textMuted} />
-              </Pressable>
+              <View className="flex-row items-center">
+                <Pressable
+                  onPress={() => {
+                    if (!isWatched(asteroid.id)) hapticSuccess(settings.hapticsEnabled);
+                    toggle(asteroid.id);
+                  }}
+                  hitSlop={12}
+                  className="mr-3"
+                >
+                  <MaterialCommunityIcons
+                    name={isWatched(asteroid.id) ? 'star' : 'star-outline'}
+                    size={26}
+                    color={isWatched(asteroid.id) ? colors.threatYellow : colors.textMuted}
+                  />
+                </Pressable>
+                <Pressable onPress={onClose} hitSlop={12}>
+                  <MaterialCommunityIcons name="close-circle" size={28} color={colors.textMuted} />
+                </Pressable>
+              </View>
             </View>
             <Text className="mt-1 text-xs" style={{ color: threat.color }}>
               {asteroid.hazardous ? '⚠️ Potentially hazardous object' : '✓ Not classified as hazardous'}

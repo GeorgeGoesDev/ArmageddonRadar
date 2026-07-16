@@ -6,6 +6,9 @@ import { colors } from '../theme/colors';
 import { describeDiameter } from '../data/diameterComparisons';
 import { useFormatters } from '../settings/useFormatters';
 import { asteroidColor } from '../utils/asteroidColor';
+import { useWatchlist } from '../watchlist/WatchlistContext';
+import { useSettings } from '../settings/SettingsContext';
+import { hapticSuccess } from '../utils/haptics';
 
 interface AsteroidCardProps {
   asteroid: Asteroid;
@@ -50,6 +53,13 @@ function Metric({ icon, label, value, highlight }: MetricProps) {
  */
 export function AsteroidCard({ asteroid, selected, onPress, onDetails }: AsteroidCardProps) {
   const fmt = useFormatters();
+  const { isWatched, toggle } = useWatchlist();
+  const { settings } = useSettings();
+  const watched = isWatched(asteroid.id);
+  const onStar = () => {
+    if (!watched) hapticSuccess(settings.hapticsEnabled);
+    toggle(asteroid.id);
+  };
   return (
     <Pressable
       onPress={onPress}
@@ -81,19 +91,19 @@ export function AsteroidCard({ asteroid, selected, onPress, onDetails }: Asteroi
             {asteroid.displayName}
           </Text>
         </View>
-        <Pressable onPress={onDetails} hitSlop={10} className="flex-row items-center">
-          {asteroid.hazardous && (
-            <View
-              className="px-2 py-0.5 rounded-full mr-2"
-              style={{ backgroundColor: 'rgba(255,69,0,0.15)' }}
-            >
-              <Text className="text-[10px] font-bold" style={{ color: colors.threatOrange }}>
-                HAZARDOUS
-              </Text>
-            </View>
-          )}
-          <MaterialCommunityIcons name="chevron-right" size={22} color={colors.accentBlue} />
-        </Pressable>
+        <View className="flex-row items-center">
+          <Pressable onPress={onStar} hitSlop={10} className="mr-2">
+            <MaterialCommunityIcons name={watched ? 'star' : 'star-outline'} size={20} color={watched ? colors.threatYellow : colors.textMuted} />
+          </Pressable>
+          <Pressable onPress={onDetails} hitSlop={10} className="flex-row items-center">
+            {asteroid.hazardous && (
+              <View className="px-2 py-0.5 rounded-full mr-2" style={{ backgroundColor: 'rgba(255,69,0,0.15)' }}>
+                <Text className="text-[10px] font-bold" style={{ color: colors.threatOrange }}>HAZARDOUS</Text>
+              </View>
+            )}
+            <MaterialCommunityIcons name="chevron-right" size={22} color={colors.accentBlue} />
+          </Pressable>
+        </View>
       </View>
 
       {/* Metrics */}
