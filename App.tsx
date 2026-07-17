@@ -9,6 +9,7 @@ import { OnboardingCarousel } from './src/components/OnboardingCarousel';
 import { configureNotifications } from './src/utils/notifications';
 import { SettingsProvider, useSettings } from './src/settings/SettingsContext';
 import { WatchlistProvider } from './src/watchlist/WatchlistContext';
+import { LocaleProvider } from './src/i18n/LocaleContext';
 import { queryClient, asyncPersister } from './src/query/persister';
 import { colors } from './src/theme/colors';
 
@@ -45,9 +46,11 @@ export default function App() {
     >
       <SettingsProvider>
         <WatchlistProvider>
-          <SafeAreaProvider>
-            <Gate />
-          </SafeAreaProvider>
+          <LocaleProvider>
+            <SafeAreaProvider>
+              <Gate />
+            </SafeAreaProvider>
+          </LocaleProvider>
         </WatchlistProvider>
       </SettingsProvider>
     </PersistQueryClientProvider>
