@@ -67,9 +67,14 @@ export function buildWidgetSnapshot(
   return { entries, builtAtMs: now };
 }
 
-/** Total: always returns a state, never throws. */
+/** Total: always returns a state, never throws — even on a malformed snapshot. */
 export function selectNextApproach(snapshot: WidgetSnapshot | null, now: number): WidgetState {
-  if (!snapshot || snapshot.entries.length === 0) return { kind: 'empty' };
+  // Guard the shape, not just null: the snapshot comes from persisted JSON, so a
+  // partial write or a reused key could deserialize to something without a valid
+  // entries array. The headless handler relies on this never throwing.
+  if (!snapshot || !Array.isArray(snapshot.entries) || snapshot.entries.length === 0) {
+    return { kind: 'empty' };
+  }
   const next = snapshot.entries.find((e) => e.approachEpochMs >= now);
   return next ? { kind: 'live', entry: next } : { kind: 'expired' };
 }

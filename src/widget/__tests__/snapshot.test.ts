@@ -72,6 +72,21 @@ describe('selectNextApproach', () => {
     expect(selectNextApproach({ entries: [], builtAtMs: NOW }, NOW).kind).toBe('empty');
   });
 
+  it('is empty (never throws) on a malformed persisted snapshot', () => {
+    // Persisted JSON could deserialize to a shape without a valid entries array.
+    const malformed = [
+      123,
+      'oops',
+      {},
+      { builtAtMs: NOW },
+      { entries: null, builtAtMs: NOW },
+      { entries: 'nope', builtAtMs: NOW },
+    ];
+    for (const m of malformed) {
+      expect(selectNextApproach(m as unknown as WidgetSnapshot, NOW).kind).toBe('empty');
+    }
+  });
+
   it('treats an approach exactly at now as live (inclusive)', () => {
     expect(selectNextApproach(snap, NOW + HOUR).kind).toBe('live');
   });
