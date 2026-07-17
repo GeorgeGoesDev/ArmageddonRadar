@@ -7,9 +7,11 @@ import { useSentryRisks } from '../hooks/useSentryRisks';
 import { SentryRisk } from '../types/sentry';
 import { TorinoChip } from '../components/TorinoChip';
 import { formatOdds } from '../utils/torino';
+import { useTranslation } from '../i18n/LocaleContext';
 
 export function ImpactRiskSheet({ visible, onClose, onSelect }: { visible: boolean; onClose: () => void; onSelect: (risk: SentryRisk) => void }) {
   const { data, isLoading, isError, error, refetch } = useSentryRisks();
+  const { t } = useTranslation();
 
   return (
     <Modal visible={visible} transparent statusBarTranslucent navigationBarTranslucent animationType="slide" onRequestClose={onClose}>
@@ -18,23 +20,23 @@ export function ImpactRiskSheet({ visible, onClose, onSelect }: { visible: boole
         <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, height: '90%' }}>
           <View className="flex-row items-center justify-between px-5 pt-4 pb-2">
             <View className="flex-row items-center">
-              <Text className="text-lg font-bold" style={{ color: colors.textPrimary }}>☠️ Impact Risk</Text>
+              <Text className="text-lg font-bold" style={{ color: colors.textPrimary }}>{t('sentry.title')}</Text>
             </View>
             <Pressable onPress={onClose} hitSlop={12}>
               <MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} />
             </Pressable>
           </View>
           <Text className="px-5 pb-2 text-xs" style={{ color: colors.textMuted }}>
-            NASA/JPL Sentry risk list · highest impact probability first
+            {t('sentry.subtitle')}
           </Text>
 
           {isLoading ? (
             <View className="py-16 items-center"><ActivityIndicator color={colors.accentBlue} /></View>
           ) : isError ? (
             <View className="py-12 items-center px-5">
-              <Text className="text-center text-xs mb-4" style={{ color: colors.textMuted }}>{error?.message ?? 'Failed to load.'}</Text>
+              <Text className="text-center text-xs mb-4" style={{ color: colors.textMuted }}>{error?.message ?? t('sentry.failedToLoad')}</Text>
               <Pressable onPress={() => refetch()} className="rounded-xl px-5 py-3" style={{ backgroundColor: colors.accentBlue }}>
-                <Text className="font-bold" style={{ color: colors.spaceBlack }}>Retry</Text>
+                <Text className="font-bold" style={{ color: colors.spaceBlack }}>{t('common.retry')}</Text>
               </Pressable>
             </View>
           ) : (

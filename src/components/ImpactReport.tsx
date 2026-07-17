@@ -24,13 +24,13 @@ export function ImpactReport({ asteroid, width }: { asteroid: Asteroid; width: n
 
   return (
     <View style={{ width, backgroundColor: colors.spaceBlack, padding: 16 }}>
-      <Text className="text-xs uppercase tracking-widest" style={{ color: colors.threatOrange }}>Impact Report</Text>
+      <Text className="text-xs uppercase tracking-widest" style={{ color: colors.threatOrange }}>{t('impact.reportLabel')}</Text>
       <Text className="text-2xl font-extrabold" style={{ color: colors.textPrimary }} numberOfLines={1}>{asteroid.displayName}</Text>
 
       <View className="mt-3 rounded-2xl p-4" style={{ backgroundColor: colors.spaceSlate }}>
-        <Text className="text-lg font-bold" style={{ color: colors.threatOrange }}>💥 {pretty(energyMt, locale)} megatons TNT</Text>
-        <Text className="text-sm mt-1" style={{ color: colors.textPrimary }}>≈ {formatInt(hiroshimas, locale)} Hiroshima bombs</Text>
-        <Text className="text-sm mt-1" style={{ color: colors.textPrimary }}>Crater ≈ {craterKm >= 1 ? `${craterKm.toFixed(1)} km` : `${formatInt(craterKm * 1000, locale)} m`} wide</Text>
+        <Text className="text-lg font-bold" style={{ color: colors.threatOrange }}>{t('impact.megatonsTnt', { value: pretty(energyMt, locale) })}</Text>
+        <Text className="text-sm mt-1" style={{ color: colors.textPrimary }}>{t('impact.hiroshimaBombs', { count: formatInt(hiroshimas, locale) })}</Text>
+        <Text className="text-sm mt-1" style={{ color: colors.textPrimary }}>{t('impact.craterWidth', { value: craterKm >= 1 ? `${craterKm.toFixed(1)} km` : `${formatInt(craterKm * 1000, locale)} m` })}</Text>
         <Text className="text-sm mt-2 font-semibold" style={{ color: colors.threatYellow }}>{severity}</Text>
       </View>
 
@@ -42,7 +42,7 @@ export function ImpactReport({ asteroid, width }: { asteroid: Asteroid; width: n
         <Text className="text-center text-sm font-semibold" style={{ color: colors.spaceBlack }}>{threatVerdict(t, threat.zone)}</Text>
       </View>
 
-      <Text className="mt-3 text-center text-[10px] uppercase tracking-widest" style={{ color: colors.textMuted }}>☄️ Armageddon Radar</Text>
+      <Text className="mt-3 text-center text-[10px] uppercase tracking-widest" style={{ color: colors.textMuted }}>{t('impact.brandFooter')}</Text>
     </View>
   );
 }

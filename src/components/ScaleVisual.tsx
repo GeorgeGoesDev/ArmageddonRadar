@@ -12,7 +12,7 @@ import { useTranslation } from '../i18n/LocaleContext';
  * you see the asteroid dwarf it.
  */
 export function ScaleVisual({ diameterM, width }: { diameterM: number; width: number }) {
-  const { locale } = useTranslation();
+  const { t, locale } = useTranslation();
   const height = 150;
   const fit = bestFitLandmark(diameterM);
   const baseY = height - 22;
@@ -45,7 +45,13 @@ export function ScaleVisual({ diameterM, width }: { diameterM: number; width: nu
         </SvgText>
       </Svg>
       <Text className="text-center text-xs" style={{ color: colors.accentBlue }}>
-        {fit ? `≈ ${fit.count} ${fit.count === 1 ? fit.landmark.singular : fit.landmark.plural} ${fit.landmark.emoji}` : 'Smaller than a garden gnome 🗿'}
+        {fit
+          ? t('impact.scaleFit', {
+              count: fit.count,
+              landmark: fit.count === 1 ? fit.landmark.singular : fit.landmark.plural,
+              emoji: fit.landmark.emoji,
+            })
+          : t('impact.scaleFallback')}
       </Text>
     </View>
   );

@@ -8,6 +8,7 @@ import { NeoWeek } from '../api/nasa';
 import { useWatchlist } from '../watchlist/WatchlistContext';
 import { useNeoDetail } from '../hooks/useNeoDetail';
 import { AsteroidCard } from '../components/AsteroidCard';
+import { useTranslation } from '../i18n/LocaleContext';
 
 function cleanName(name: string): string {
   return name.replace(/^\(|\)$/g, '').trim();
@@ -17,6 +18,7 @@ function cleanName(name: string): string {
 function RemoteRow({ id }: { id: string }) {
   const { data, isLoading } = useNeoDetail(id);
   const { toggle } = useWatchlist();
+  const { t } = useTranslation();
   const name = data ? cleanName(data.name) : id;
   const next = data
     ? data.approaches
@@ -24,10 +26,13 @@ function RemoteRow({ id }: { id: string }) {
         .sort((a, b) => a.epochMs - b.epochMs)[0]
     : undefined;
   const subtitle = isLoading
-    ? 'Loading…'
+    ? t('watchlist.loading')
     : next
-      ? `Next approach ${new Date(next.epochMs).toLocaleDateString([], { day: '2-digit', month: 'short' })} · ${next.missLunar.toFixed(1)} LD`
-      : 'Not currently approaching';
+      ? t('watchlist.nextApproach', {
+          date: new Date(next.epochMs).toLocaleDateString([], { day: '2-digit', month: 'short' }),
+          distance: next.missLunar.toFixed(1),
+        })
+      : t('watchlist.notApproaching');
 
   return (
     <View className="rounded-2xl p-4 mb-3 flex-row items-center justify-between" style={{ backgroundColor: colors.spaceSlate, borderWidth: 1.5, borderColor: colors.cardBorder }}>
@@ -54,6 +59,7 @@ export function WatchlistSheet({
   onOpen: (a: Asteroid) => void;
 }) {
   const { ids } = useWatchlist();
+  const { t } = useTranslation();
   const byId = useMemo(() => {
     const m = new Map<string, Asteroid>();
     if (week) for (const list of Object.values(week)) for (const a of list) if (!m.has(a.id)) m.set(a.id, a);
@@ -66,7 +72,7 @@ export function WatchlistSheet({
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
         <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, height: '90%' }}>
           <View className="flex-row items-center justify-between px-5 pt-4 pb-2">
-            <Text className="text-lg font-bold" style={{ color: colors.textPrimary }}>★ Watchlist</Text>
+            <Text className="text-lg font-bold" style={{ color: colors.textPrimary }}>{t('watchlist.title')}</Text>
             <Pressable onPress={onClose} hitSlop={12}>
               <MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} />
             </Pressable>
@@ -76,8 +82,8 @@ export function WatchlistSheet({
             {ids.length === 0 ? (
               <View className="py-16 items-center">
                 <MaterialCommunityIcons name="star-outline" size={48} color={colors.textMuted} />
-                <Text className="mt-3 text-center text-sm" style={{ color: colors.textMuted }}>No starred asteroids yet.</Text>
-                <Text className="mt-1 text-center text-xs" style={{ color: colors.textMuted }}>Tap the ★ on any asteroid to track it here.</Text>
+                <Text className="mt-3 text-center text-sm" style={{ color: colors.textMuted }}>{t('watchlist.empty')}</Text>
+                <Text className="mt-1 text-center text-xs" style={{ color: colors.textMuted }}>{t('watchlist.emptyHint')}</Text>
               </View>
             ) : (
               ids.map((id) => {
