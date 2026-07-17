@@ -6,7 +6,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNeoWeek } from '../hooks/useNeoWeek';
 import { Asteroid } from '../types/neo';
 import { colors } from '../theme/colors';
-import { getLocalDateKey } from '../utils/dates';
+import { useLocalDateKey } from '../hooks/useDayKey';
 import { ThreatGauge } from '../components/ThreatGauge';
 import { VerdictBanner } from '../components/VerdictBanner';
 import { RadarView } from '../components/RadarView';
@@ -63,8 +63,17 @@ function ErrorState({ message, onRetry, onDemo }: { message: string; onRetry: ()
 
 export function DashboardScreen() {
   const [useMock, setUseMock] = useState(false);
-  const [selectedDateKey, setSelectedDateKey] = useState<string>(getLocalDateKey());
+  const todayKey = useLocalDateKey();
+  const [selectedDateKey, setSelectedDateKey] = useState<string>(todayKey);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // The day key rolls when the app is resumed after midnight. Follow it, so a
+  // resident app doesn't keep yesterday's day selected. Runs harmlessly at mount
+  // (same value) and only resets the selection when the day actually changes.
+  useEffect(() => {
+    setSelectedDateKey(todayKey);
+    setSelectedId(null);
+  }, [todayKey]);
   const [controls, setControls] = useState<ListControls>(DEFAULT_CONTROLS);
   const [detailAsteroid, setDetailAsteroid] = useState<Asteroid | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);

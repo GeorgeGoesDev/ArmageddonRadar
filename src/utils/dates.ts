@@ -30,3 +30,19 @@ export function formatLocalDateTime(epochMs: number): string {
     minute: '2-digit',
   });
 }
+
+/**
+ * The APOD publication day as `YYYY-MM-DD`.
+ *
+ * NASA rolls APOD at midnight US Eastern, so keying the query by the *device's*
+ * date caches yesterday's payload under today's key for anyone east of ET.
+ * Approximated as the date at UTC-5 (US Eastern standard) with plain arithmetic,
+ * so it needs no ICU timezone data on Hermes.
+ */
+export function getApodDayKey(now: Date = new Date()): string {
+  const shifted = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+  const y = shifted.getUTCFullYear();
+  const m = String(shifted.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(shifted.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}

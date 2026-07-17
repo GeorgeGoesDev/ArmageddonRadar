@@ -15,7 +15,14 @@
         }
       ],
       "expo-image",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Armageddon Radar to save NASA images to your gallery.",
+          "savePhotosPermission": "Allow Armageddon Radar to save NASA images to your gallery."
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": true,
