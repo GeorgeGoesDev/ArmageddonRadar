@@ -1,4 +1,5 @@
-﻿import { colors } from '../theme/colors';
+import { colors } from '../theme/colors';
+import type { TFunc } from '../i18n/LocaleContext';
 
 export type ThreatZone = 'danger' | 'watch' | 'safe';
 
@@ -12,8 +13,6 @@ export const DEFAULT_THRESHOLDS: ThreatThresholds = { dangerLD: 1, safeLD: 5 };
 export interface ThreatLevel {
   t: number;
   zone: ThreatZone;
-  verdict: string;
-  shortVerdict: string;
   color: string;
 }
 
@@ -34,29 +33,29 @@ export function getThreatLevel(
   const t = clamp01((safeLD - lunar) / safeLD);
 
   if (lunar < dangerLD) {
-    return {
-      t,
-      zone: 'danger',
-      verdict: '🚨 Lock your doors. (Just kidding, but it’s close!)',
-      shortVerdict: 'Lock your doors (just kidding… mostly)',
-      color: colors.threatOrange,
-    };
+    return { t, zone: 'danger', color: colors.threatOrange };
   }
   if (lunar <= safeLD) {
-    return {
-      t,
-      zone: 'watch',
-      verdict: '👀 Keep your eyes on the skies.',
-      shortVerdict: 'Keep your eyes on the skies',
-      color: colors.threatYellow,
-    };
+    return { t, zone: 'watch', color: colors.threatYellow };
   }
-  return {
-    t,
-    zone: 'safe',
-    verdict: '🛡️ Verdict: Not today, space rocks.',
-    shortVerdict: 'Not today, space rocks',
-    color: colors.safeGreen,
-  };
+  return { t, zone: 'safe', color: colors.safeGreen };
 }
 
+const VERDICT: Record<ThreatZone, string> = {
+  danger: 'threat.hazardVerdict',
+  watch: 'threat.watchVerdict',
+  safe: 'threat.safeVerdict',
+};
+const SHORT: Record<ThreatZone, string> = {
+  danger: 'threat.hazardShort',
+  watch: 'threat.watchShort',
+  safe: 'threat.safeShort',
+};
+
+export function threatVerdict(t: TFunc, zone: ThreatZone): string {
+  return t(VERDICT[zone]);
+}
+
+export function threatShortVerdict(t: TFunc, zone: ThreatZone): string {
+  return t(SHORT[zone]);
+}

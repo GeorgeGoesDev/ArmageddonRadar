@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Asteroid } from '../types/neo';
 import { colors } from '../theme/colors';
-import { getThreatLevel } from '../utils/threat';
+import { getThreatLevel, threatShortVerdict } from '../utils/threat';
 import { asteroidColor } from '../utils/asteroidColor';
 import { describeDiameter } from '../data/diameterComparisons';
 import { formatInt, KM_TO_MILES } from '../utils/units';
@@ -53,7 +53,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
   const [reminder, setReminder] = useState<ReminderState>({ status: 'idle' });
   const fmt = useFormatters();
   const thresholds = useThresholds();
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
   const { width } = useWindowDimensions();
   const detail = useNeoDetail(asteroid?.id ?? null);
   const { settings } = useSettings();
@@ -89,7 +89,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
   const handleShare = async () => {
     const message =
       `☄️ Asteroid ${asteroid.displayName} is passing within ${formatInt(asteroid.missMiles, locale)} miles of Earth today ` +
-      `at ${formatInt(asteroid.velocityKph, locale)} KPH. Verdict: ${threat.shortVerdict}! ` +
+      `at ${formatInt(asteroid.velocityKph, locale)} KPH. Verdict: ${threatShortVerdict(t, threat.zone)}! ` +
       `— tracked with Armageddon Radar`;
     try {
       await Share.share({ message });

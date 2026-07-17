@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import { Asteroid } from '../types/neo';
 import { computeImpact } from '../utils/impact';
 import { ScaleVisual } from './ScaleVisual';
-import { getThreatLevel } from '../utils/threat';
+import { getThreatLevel, threatVerdict } from '../utils/threat';
 import { useThresholds } from '../settings/useFormatters';
 import { formatInt } from '../utils/units';
 import { colors } from '../theme/colors';
@@ -18,7 +18,7 @@ function pretty(n: number, locale: Locale): string {
 
 export function ImpactReport({ asteroid, width }: { asteroid: Asteroid; width: number }) {
   const thresholds = useThresholds();
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
   const threat = getThreatLevel(asteroid.missLunar, thresholds);
   const { energyMt, hiroshimas, craterKm, severity } = computeImpact(asteroid.diameterAvgM, asteroid.velocityKph);
 
@@ -39,7 +39,7 @@ export function ImpactReport({ asteroid, width }: { asteroid: Asteroid; width: n
       </View>
 
       <View className="mt-3 rounded-2xl px-4 py-3" style={{ backgroundColor: threat.color }}>
-        <Text className="text-center text-sm font-semibold" style={{ color: colors.spaceBlack }}>{threat.verdict}</Text>
+        <Text className="text-center text-sm font-semibold" style={{ color: colors.spaceBlack }}>{threatVerdict(t, threat.zone)}</Text>
       </View>
 
       <Text className="mt-3 text-center text-[10px] uppercase tracking-widest" style={{ color: colors.textMuted }}>☄️ Armageddon Radar</Text>
