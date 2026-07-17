@@ -3,14 +3,16 @@ import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import { useTranslation } from '../i18n/LocaleContext';
 
-const SLIDES: { icon: keyof typeof MaterialCommunityIcons.glyphMap; title: string; body: string }[] = [
-  { icon: 'gauge', title: 'The Threat Gauge', body: "The needle tracks today's closest asteroid in lunar distances — under 1 is red-alert close, over 5 is all clear." },
-  { icon: 'radar', title: 'The Live Radar', body: 'Every blip is a near-Earth object today. Tap one to focus it and see its speed, size, and miss distance.' },
-  { icon: 'skull-outline', title: 'Impact Reports', body: 'Open any asteroid and hit "Simulate impact" to see energy, craters, and a shareable doomsday card.' },
+const SLIDES: { id: string; icon: keyof typeof MaterialCommunityIcons.glyphMap; titleKey: string; bodyKey: string }[] = [
+  { id: 'gauge', icon: 'gauge', titleKey: 'onboarding.gaugeTitle', bodyKey: 'onboarding.gaugeBody' },
+  { id: 'radar', icon: 'radar', titleKey: 'onboarding.radarTitle', bodyKey: 'onboarding.radarBody' },
+  { id: 'impact', icon: 'skull-outline', titleKey: 'onboarding.impactTitle', bodyKey: 'onboarding.impactBody' },
 ];
 
 export function OnboardingCarousel({ onDone }: { onDone: () => void }) {
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const scrollRef = useRef<ScrollView>(null);
   const [index, setIndex] = useState(0);
@@ -24,7 +26,7 @@ export function OnboardingCarousel({ onDone }: { onDone: () => void }) {
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.spaceBlack }}>
       <View className="flex-row justify-end px-5 pt-2">
-        <Pressable onPress={onDone} hitSlop={10}><Text className="text-sm" style={{ color: colors.textMuted }}>Skip</Text></Pressable>
+        <Pressable onPress={onDone} hitSlop={10}><Text className="text-sm" style={{ color: colors.textMuted }}>{t('onboarding.skip')}</Text></Pressable>
       </View>
       <ScrollView
         ref={scrollRef}
@@ -34,10 +36,10 @@ export function OnboardingCarousel({ onDone }: { onDone: () => void }) {
         onMomentumScrollEnd={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
       >
         {SLIDES.map((s) => (
-          <View key={s.title} style={{ width }} className="items-center justify-center px-8">
+          <View key={s.id} style={{ width }} className="items-center justify-center px-8">
             <MaterialCommunityIcons name={s.icon} size={72} color={colors.accentBlue} />
-            <Text className="mt-6 text-2xl font-extrabold text-center" style={{ color: colors.textPrimary }}>{s.title}</Text>
-            <Text className="mt-3 text-center text-sm" style={{ color: colors.textMuted }}>{s.body}</Text>
+            <Text className="mt-6 text-2xl font-extrabold text-center" style={{ color: colors.textPrimary }}>{t(s.titleKey)}</Text>
+            <Text className="mt-3 text-center text-sm" style={{ color: colors.textMuted }}>{t(s.bodyKey)}</Text>
           </View>
         ))}
       </ScrollView>
@@ -48,7 +50,7 @@ export function OnboardingCarousel({ onDone }: { onDone: () => void }) {
           ))}
         </View>
         <Pressable onPress={next} className="rounded-2xl px-6 py-3" style={{ backgroundColor: colors.accentBlue }}>
-          <Text className="font-bold" style={{ color: colors.spaceBlack }}>{index < SLIDES.length - 1 ? 'Next' : 'Get started'}</Text>
+          <Text className="font-bold" style={{ color: colors.spaceBlack }}>{index < SLIDES.length - 1 ? t('onboarding.next') : t('onboarding.getStarted')}</Text>
         </Pressable>
       </View>
     </SafeAreaView>

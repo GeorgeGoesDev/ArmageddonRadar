@@ -33,6 +33,17 @@ export const en = {
     watchShort: 'Keep your eyes on the skies',
     safeShort: 'Not today, space rocks',
   },
+  onboarding: {
+    skip: 'Skip',
+    next: 'Next',
+    getStarted: 'Get started',
+    gaugeTitle: 'The Threat Gauge',
+    gaugeBody: "The needle tracks today's closest asteroid in lunar distances — under 1 is red-alert close, over 5 is all clear.",
+    radarTitle: 'The Live Radar',
+    radarBody: 'Every blip is a near-Earth object today. Tap one to focus it and see its speed, size, and miss distance.',
+    impactTitle: 'Impact Reports',
+    impactBody: 'Open any asteroid and hit "Simulate impact" to see energy, craters, and a shareable doomsday card.',
+  },
 };
 
 export type Catalog = typeof en;
