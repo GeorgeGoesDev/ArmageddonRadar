@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -9,12 +9,16 @@ import { useSettings } from '../settings/SettingsContext';
 
 type Job = 'save' | 'wallpaper';
 
+const DONE_DISPLAY_MS = 1500;
+
 function ActionButton({
-  icon, label, busy, disabled, onPress,
+  icon, label, busy, done, doneLabel, disabled, onPress,
 }: {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   label: string;
   busy: boolean;
+  done: boolean;
+  doneLabel: string;
   disabled: boolean;
   onPress: () => void;
 }) {
@@ -33,9 +37,15 @@ function ActionButton({
       {busy ? (
         <ActivityIndicator size="small" color={colors.accentBlue} />
       ) : (
-        <MaterialCommunityIcons name={icon} size={18} color={colors.accentBlue} />
+        <MaterialCommunityIcons
+          name={done ? 'check' : icon}
+          size={18}
+          color={colors.accentBlue}
+        />
       )}
-      <Text className="ml-2 text-xs font-semibold" style={{ color: colors.textPrimary }}>{label}</Text>
+      <Text className="ml-2 text-xs font-semibold" style={{ color: colors.textPrimary }}>
+        {done ? doneLabel : label}
+      </Text>
     </Pressable>
   );
 }
@@ -43,14 +53,29 @@ function ActionButton({
 export function ApodActions({ apod }: { apod: Apod }) {
   const { settings } = useSettings();
   const [busy, setBusy] = useState<Job | null>(null);
+  const [done, setDone] = useState<Job | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const doneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (doneTimeoutRef.current) {
+      clearTimeout(doneTimeoutRef.current);
+    }
+  }, []);
 
   async function run(job: Job, action: () => Promise<void>) {
+    if (doneTimeoutRef.current) {
+      clearTimeout(doneTimeoutRef.current);
+      doneTimeoutRef.current = null;
+    }
     setBusy(job);
     setError(null);
+    setDone(null);
     try {
       await action();
       hapticSuccess(settings.hapticsEnabled);
+      setDone(job);
+      doneTimeoutRef.current = setTimeout(() => setDone(null), DONE_DISPLAY_MS);
     } catch (e) {
       // Surface the reason: an HD APOD is several MB and a denied permission or a
       // dropped connection must never look like a dead button.
@@ -67,6 +92,8 @@ export function ApodActions({ apod }: { apod: Apod }) {
           icon="download"
           label="Save to gallery"
           busy={busy === 'save'}
+          done={done === 'save'}
+          doneLabel="Saved"
           disabled={busy !== null}
           onPress={() => run('save', () => saveApodToGallery(apod))}
         />
@@ -74,6 +101,8 @@ export function ApodActions({ apod }: { apod: Apod }) {
           icon="wallpaper"
           label="Set as wallpaper"
           busy={busy === 'wallpaper'}
+          done={done === 'wallpaper'}
+          doneLabel="Opening..."
           disabled={busy !== null}
           onPress={() => run('wallpaper', () => setApodAsWallpaper(apod))}
         />
