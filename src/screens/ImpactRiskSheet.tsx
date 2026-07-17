@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { useSentryRisks } from '../hooks/useSentryRisks';
@@ -11,9 +12,10 @@ export function ImpactRiskSheet({ visible, onClose, onSelect }: { visible: boole
   const { data, isLoading, isError, error, refetch } = useSentryRisks();
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent statusBarTranslucent navigationBarTranslucent animationType="slide" onRequestClose={onClose}>
+      <SafeAreaProvider style={{ flex: 1 }}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, maxHeight: '90%' }}>
+        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, height: '90%' }}>
           <View className="flex-row items-center justify-between px-5 pt-4 pb-2">
             <View className="flex-row items-center">
               <Text className="text-lg font-bold" style={{ color: colors.textPrimary }}>☠️ Impact Risk</Text>
@@ -36,7 +38,8 @@ export function ImpactRiskSheet({ visible, onClose, onSelect }: { visible: boole
               </Pressable>
             </View>
           ) : (
-            <ScrollView className="px-5" style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
+            <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
+            <ScrollView className="px-5" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
               {(data ?? []).map((risk, i) => (
                 <Pressable key={risk.designation} onPress={() => onSelect(risk)} className="flex-row items-center py-3" style={{ borderBottomWidth: 1, borderBottomColor: colors.gridLineFaint }}>
                   <Text className="text-xs w-6" style={{ color: colors.textMuted }}>{i + 1}</Text>
@@ -49,9 +52,11 @@ export function ImpactRiskSheet({ visible, onClose, onSelect }: { visible: boole
                 </Pressable>
               ))}
             </ScrollView>
+            </SafeAreaView>
           )}
         </View>
       </View>
+      </SafeAreaProvider>
     </Modal>
   );
 }

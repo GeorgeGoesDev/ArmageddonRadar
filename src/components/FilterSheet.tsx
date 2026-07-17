@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Pressable, Switch, Text, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import { colors } from '../theme/colors';
 import { ListControls } from '../utils/listControls';
@@ -16,7 +17,8 @@ const MAX_LUNAR_CAP = 20;
 export function FilterSheet({ visible, controls, onChange, onClose }: Props) {
   const distanceValue = Number.isFinite(controls.maxLunar) ? controls.maxLunar : MAX_LUNAR_CAP;
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent statusBarTranslucent navigationBarTranslucent animationType="slide" onRequestClose={onClose}>
+      <SafeAreaProvider style={{ flex: 1 }}>
       <Pressable className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }} onPress={onClose}>
         <Pressable
           className="rounded-t-3xl px-5 pt-4 pb-8"
@@ -71,8 +73,10 @@ export function FilterSheet({ visible, controls, onChange, onClose }: Props) {
           >
             <Text className="font-bold" style={{ color: colors.spaceBlack }}>Done</Text>
           </Pressable>
+          <SafeAreaView edges={['bottom']} />
         </Pressable>
       </Pressable>
+      </SafeAreaProvider>
     </Modal>
   );
 }

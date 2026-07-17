@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -35,13 +36,15 @@ export function ImpactReportSheet({ asteroid, visible, onClose }: { asteroid: As
   if (!asteroid) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent statusBarTranslucent navigationBarTranslucent animationType="slide" onRequestClose={onClose}>
+      <SafeAreaProvider style={{ flex: 1 }}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, maxHeight: '92%' }}>
+        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, height: '92%' }}>
           <View className="flex-row items-center justify-end px-4 pt-3">
             <Pressable onPress={onClose} hitSlop={12}><MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} /></Pressable>
           </View>
-          <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ alignItems: 'center', paddingBottom: 24 }}>
+          <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ alignItems: 'center', paddingBottom: 24 }}>
             <View ref={shotRef} collapsable={false} style={{ backgroundColor: colors.spaceBlack, borderRadius: 16, overflow: 'hidden' }}>
               <ImpactReport asteroid={asteroid} width={cardWidth} />
             </View>
@@ -51,8 +54,10 @@ export function ImpactReportSheet({ asteroid, visible, onClose }: { asteroid: As
               <Text className="ml-2 font-bold" style={{ color: colors.spaceBlack }}>Share image</Text>
             </Pressable>
           </ScrollView>
+          </SafeAreaView>
         </View>
       </View>
+      </SafeAreaProvider>
     </Modal>
   );
 }

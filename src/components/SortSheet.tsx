@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { SORT_OPTIONS, SortDir, SortField } from '../utils/listControls';
@@ -14,7 +15,8 @@ interface Props {
 
 export function SortSheet({ visible, field, dir, onSelect, onClose }: Props) {
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent statusBarTranslucent navigationBarTranslucent animationType="slide" onRequestClose={onClose}>
+      <SafeAreaProvider style={{ flex: 1 }}>
       <Pressable className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }} onPress={onClose}>
         <Pressable className="rounded-t-3xl px-5 pt-4 pb-8" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder }}>
           <View className="items-center mb-3">
@@ -35,8 +37,10 @@ export function SortSheet({ visible, field, dir, onSelect, onClose }: Props) {
               </Pressable>
             );
           })}
+          <SafeAreaView edges={['bottom']} />
         </Pressable>
       </Pressable>
+      </SafeAreaProvider>
     </Modal>
   );
 }

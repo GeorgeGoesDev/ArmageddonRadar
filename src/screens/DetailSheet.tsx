@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, Share, Text, useWindowDimensions, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Asteroid } from '../types/neo';
@@ -96,11 +97,12 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" transparent statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>
+      <SafeAreaProvider style={{ flex: 1 }}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
         <View
           className="rounded-t-3xl overflow-hidden"
-          style={{ backgroundColor: colors.spaceBlack, maxHeight: '90%', borderTopWidth: 1, borderColor: colors.cardBorder }}
+          style={{ backgroundColor: colors.spaceBlack, height: '90%', borderTopWidth: 1, borderColor: colors.cardBorder }}
         >
           {/* Header */}
           <LinearGradient
@@ -145,7 +147,8 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
             </Text>
           </LinearGradient>
 
-          <ScrollView className="px-5" style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
+          <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
+          <ScrollView className="px-5" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             {/* Orbital data */}
             <Text className="mt-4 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>
               Orbital mechanics
@@ -250,8 +253,10 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
               </Text>
             </Pressable>
           </ScrollView>
+          </SafeAreaView>
         </View>
       </View>
+      </SafeAreaProvider>
       <ImpactReportSheet asteroid={asteroid} visible={simVisible} onClose={() => setSimVisible(false)} />
     </Modal>
   );
