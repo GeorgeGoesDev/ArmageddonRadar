@@ -37,11 +37,11 @@ export function ImpactReportSheet({ asteroid, visible, onClose }: { asteroid: As
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, maxHeight: '92%' }}>
+        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, height: '92%' }}>
           <View className="flex-row items-center justify-end px-4 pt-3">
             <Pressable onPress={onClose} hitSlop={12}><MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} /></Pressable>
           </View>
-          <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ alignItems: 'center', paddingBottom: 24 }}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ alignItems: 'center', paddingBottom: 24 }}>
             <View ref={shotRef} collapsable={false} style={{ backgroundColor: colors.spaceBlack, borderRadius: 16, overflow: 'hidden' }}>
               <ImpactReport asteroid={asteroid} width={cardWidth} />
             </View>

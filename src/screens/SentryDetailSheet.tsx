@@ -29,13 +29,13 @@ export function SentryDetailSheet({ risk, onClose }: { risk: SentryRisk | null; 
   return (
     <Modal visible={!!risk} transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, maxHeight: '90%' }}>
+        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, height: '90%' }}>
           <View className="flex-row items-center justify-between px-5 pt-4 pb-2">
             <Text className="text-xl font-extrabold flex-1" style={{ color: colors.textPrimary }} numberOfLines={1}>{risk.name}</Text>
             <Pressable onPress={onClose} hitSlop={12}><MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} /></Pressable>
           </View>
 
-          <ScrollView className="px-5" style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
+          <ScrollView className="px-5" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             <View className="flex-row items-center mb-2" style={{ gap: 8 }}>
               <TorinoChip level={risk.torinoMax} />
               <Text className="text-xs" style={{ color: colors.textMuted }}>{TORINO_CAPTION[risk.torinoMax] ?? 'Elevated — merits attention by astronomers.'}</Text>

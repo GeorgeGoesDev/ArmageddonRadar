@@ -7,15 +7,19 @@ import { Apod } from '../types/apod';
 
 export function ApodSheet({ apod, visible, onClose }: { apod: Apod | null; visible: boolean; onClose: () => void }) {
   if (!apod) return null;
+  // Fabric only gives a ScrollView a real scroll range when its parent has a
+  // DEFINITE height. `maxHeight` is just a cap (the box stays content-sized), so
+  // flexShrink/maxHeight on the ScrollView never scrolls. Mirroring the dashboard:
+  // the sheet gets a definite `height` and the ScrollView is `flex: 1`.
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-        <View className="rounded-t-3xl overflow-hidden" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, maxHeight: '92%' }}>
+        <View className="rounded-t-3xl overflow-hidden" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, height: '92%' }}>
           <View className="flex-row items-center justify-between px-5 pt-4 pb-2">
             <Text className="text-xs uppercase tracking-widest flex-1" style={{ color: colors.accentBlue }}>Astronomy Picture · {apod.date}</Text>
             <Pressable onPress={onClose} hitSlop={12}><MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} /></Pressable>
           </View>
-          <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             {apod.mediaType === 'image' ? (
               <Image source={{ uri: apod.hdImageUrl || apod.imageUrl }} style={{ width: '100%', height: 260 }} contentFit="cover" transition={200} />
             ) : (

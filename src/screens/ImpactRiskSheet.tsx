@@ -13,7 +13,7 @@ export function ImpactRiskSheet({ visible, onClose, onSelect }: { visible: boole
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, maxHeight: '90%' }}>
+        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, height: '90%' }}>
           <View className="flex-row items-center justify-between px-5 pt-4 pb-2">
             <View className="flex-row items-center">
               <Text className="text-lg font-bold" style={{ color: colors.textPrimary }}>☠️ Impact Risk</Text>
@@ -36,7 +36,7 @@ export function ImpactRiskSheet({ visible, onClose, onSelect }: { visible: boole
               </Pressable>
             </View>
           ) : (
-            <ScrollView className="px-5" style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
+            <ScrollView className="px-5" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
               {(data ?? []).map((risk, i) => (
                 <Pressable key={risk.designation} onPress={() => onSelect(risk)} className="flex-row items-center py-3" style={{ borderBottomWidth: 1, borderBottomColor: colors.gridLineFaint }}>
                   <Text className="text-xs w-6" style={{ color: colors.textMuted }}>{i + 1}</Text>

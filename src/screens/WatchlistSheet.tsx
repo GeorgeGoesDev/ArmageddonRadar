@@ -62,14 +62,14 @@ export function WatchlistSheet({
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, maxHeight: '90%' }}>
+        <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, height: '90%' }}>
           <View className="flex-row items-center justify-between px-5 pt-4 pb-2">
             <Text className="text-lg font-bold" style={{ color: colors.textPrimary }}>★ Watchlist</Text>
             <Pressable onPress={onClose} hitSlop={12}>
               <MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} />
             </Pressable>
           </View>
-          <ScrollView className="px-5" style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
+          <ScrollView className="px-5" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             {ids.length === 0 ? (
               <View className="py-16 items-center">
                 <MaterialCommunityIcons name="star-outline" size={48} color={colors.textMuted} />
