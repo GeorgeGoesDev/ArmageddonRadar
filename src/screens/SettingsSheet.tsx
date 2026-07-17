@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Linking, Modal, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import Constants from 'expo-constants';
 import { useQueryClient } from '@tanstack/react-query';
@@ -42,7 +43,8 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent statusBarTranslucent navigationBarTranslucent animationType="slide" onRequestClose={onClose}>
+      <SafeAreaProvider style={{ flex: 1 }}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
         <View className="rounded-t-3xl" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, height: '90%' }}>
           <View className="flex-row items-center justify-between px-5 pt-4 pb-2">
@@ -51,6 +53,7 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
               <MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} />
             </Pressable>
           </View>
+          <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
           <ScrollView className="px-5" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             <Text className="mt-3 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>Distance unit</Text>
             <Segmented<DistanceUnit>
@@ -135,8 +138,10 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
               <Text className="text-xs" style={{ color: colors.accentBlue }}>Source on GitHub</Text>
             </Pressable>
           </ScrollView>
+          </SafeAreaView>
         </View>
       </View>
+      </SafeAreaProvider>
     </Modal>
   );
 }

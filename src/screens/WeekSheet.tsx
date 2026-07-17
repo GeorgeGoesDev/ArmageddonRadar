@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NeoWeek } from '../api/nasa';
 import { colors } from '../theme/colors';
@@ -18,7 +19,8 @@ export function WeekSheet({ visible, week, onClose, onSelectDay }: { visible: bo
   const keys = Object.keys(week);
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent statusBarTranslucent navigationBarTranslucent animationType="slide" onRequestClose={onClose}>
+      <SafeAreaProvider style={{ flex: 1 }}>
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
         <View className="rounded-t-3xl px-5 pt-4 pb-8" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, maxHeight: '85%' }}>
           <View className="flex-row items-center justify-between mb-4">
@@ -50,8 +52,10 @@ export function WeekSheet({ visible, week, onClose, onSelectDay }: { visible: bo
               </Pressable>
             );
           })}
+          <SafeAreaView edges={['bottom']} />
         </View>
       </View>
+      </SafeAreaProvider>
     </Modal>
   );
 }
