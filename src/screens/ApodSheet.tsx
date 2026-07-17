@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { Apod } from '../types/apod';
+import { ApodActions } from '../components/ApodActions';
 
 export function ApodSheet({ apod, visible, onClose }: { apod: Apod | null; visible: boolean; onClose: () => void }) {
   if (!apod) return null;
@@ -37,6 +38,7 @@ export function ApodSheet({ apod, visible, onClose }: { apod: Apod | null; visib
               <Text className="mt-3 text-sm leading-5" style={{ color: colors.textMuted }}>{apod.explanation}</Text>
             </View>
           </ScrollView>
+          {apod.mediaType === 'image' && <ApodActions apod={apod} />}
           </SafeAreaView>
         </View>
       </View>
