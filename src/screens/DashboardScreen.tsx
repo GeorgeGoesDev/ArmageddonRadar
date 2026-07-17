@@ -28,6 +28,7 @@ import { useThresholds } from '../settings/useFormatters';
 import { getThreatLevel } from '../utils/threat';
 import { hapticWarning } from '../utils/haptics';
 import { syncAutoNotifications } from '../utils/notificationScheduler';
+import { syncWidget } from '../widget/sync';
 
 function Header({ onWatchlist, onWeek, onSettings, onRisk }: { onWatchlist: () => void; onWeek: () => void; onSettings: () => void; onRisk: () => void }) {
   return (
@@ -107,6 +108,7 @@ export function DashboardScreen() {
   useEffect(() => {
     if (!week) return;
     syncAutoNotifications(week, settings, thresholds).catch(() => {});
+    syncWidget(week, thresholds).catch(() => {});
   }, [week, settings.dailyDigestEnabled, settings.digestHour, settings.smartAlertsEnabled, thresholds.dangerLD, thresholds.safeLD]);
 
   const effectiveSelectedId = selectedId ?? closest?.id ?? null;
