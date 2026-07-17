@@ -7,15 +7,18 @@ import { getThreatLevel } from '../utils/threat';
 import { useThresholds } from '../settings/useFormatters';
 import { formatInt } from '../utils/units';
 import { colors } from '../theme/colors';
+import { useTranslation } from '../i18n/LocaleContext';
+import type { Locale } from '../i18n/i18n';
 
-function pretty(n: number): string {
-  if (n >= 1000) return formatInt(n);
+function pretty(n: number, locale: Locale): string {
+  if (n >= 1000) return formatInt(n, locale);
   if (n >= 1) return n.toPrecision(3);
   return n.toPrecision(2);
 }
 
 export function ImpactReport({ asteroid, width }: { asteroid: Asteroid; width: number }) {
   const thresholds = useThresholds();
+  const { locale } = useTranslation();
   const threat = getThreatLevel(asteroid.missLunar, thresholds);
   const { energyMt, hiroshimas, craterKm, severity } = computeImpact(asteroid.diameterAvgM, asteroid.velocityKph);
 
@@ -25,9 +28,9 @@ export function ImpactReport({ asteroid, width }: { asteroid: Asteroid; width: n
       <Text className="text-2xl font-extrabold" style={{ color: colors.textPrimary }} numberOfLines={1}>{asteroid.displayName}</Text>
 
       <View className="mt-3 rounded-2xl p-4" style={{ backgroundColor: colors.spaceSlate }}>
-        <Text className="text-lg font-bold" style={{ color: colors.threatOrange }}>💥 {pretty(energyMt)} megatons TNT</Text>
-        <Text className="text-sm mt-1" style={{ color: colors.textPrimary }}>≈ {formatInt(hiroshimas)} Hiroshima bombs</Text>
-        <Text className="text-sm mt-1" style={{ color: colors.textPrimary }}>Crater ≈ {craterKm >= 1 ? `${craterKm.toFixed(1)} km` : `${formatInt(craterKm * 1000)} m`} wide</Text>
+        <Text className="text-lg font-bold" style={{ color: colors.threatOrange }}>💥 {pretty(energyMt, locale)} megatons TNT</Text>
+        <Text className="text-sm mt-1" style={{ color: colors.textPrimary }}>≈ {formatInt(hiroshimas, locale)} Hiroshima bombs</Text>
+        <Text className="text-sm mt-1" style={{ color: colors.textPrimary }}>Crater ≈ {craterKm >= 1 ? `${craterKm.toFixed(1)} km` : `${formatInt(craterKm * 1000, locale)} m`} wide</Text>
         <Text className="text-sm mt-2 font-semibold" style={{ color: colors.threatYellow }}>{severity}</Text>
       </View>
 

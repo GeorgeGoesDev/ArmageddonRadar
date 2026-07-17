@@ -1,16 +1,16 @@
 /** Formatting + unit conversion helpers. */
 
-const nf0 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
-const nf1 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
+import { formatNumber } from '../i18n/format';
+import type { Locale } from '../i18n/i18n';
 
 export const KM_TO_MILES = 0.621371;
 
-export function formatInt(n: number): string {
-  return nf0.format(n);
+export function formatInt(n: number, locale: Locale): string {
+  return formatNumber(n, locale, 0);
 }
 
-export function formatDiameterRange(minM: number, maxM: number): string {
-  return `${nf0.format(minM)} – ${nf0.format(maxM)} m`;
+export function formatDiameterRange(minM: number, maxM: number, locale: Locale): string {
+  return `${formatNumber(minM, locale, 0)} – ${formatNumber(maxM, locale, 0)} m`;
 }
 
 export type DistanceUnit = 'lunar' | 'km' | 'miles';
@@ -29,29 +29,29 @@ export interface Formatters {
   int(n: number): string;
 }
 
-export function makeFormatters(prefs: UnitPrefs): Formatters {
+export function makeFormatters(prefs: UnitPrefs, locale: Locale): Formatters {
   return {
     distanceFromLunar(lunar, kmValue, milesValue) {
       switch (prefs.distanceUnit) {
         case 'km':
-          return `${nf0.format(kmValue)} km`;
+          return `${formatNumber(kmValue, locale, 0)} km`;
         case 'miles':
-          return `${nf0.format(milesValue)} mi`;
+          return `${formatNumber(milesValue, locale, 0)} mi`;
         case 'lunar':
         default:
-          return `${nf1.format(lunar)} LD`;
+          return `${formatNumber(lunar, locale, 1)} LD`;
       }
     },
     velocity(kph) {
       return prefs.velocityUnit === 'mph'
-        ? `${nf0.format(kph * KM_TO_MILES)} mph`
-        : `${nf0.format(kph)} km/h`;
+        ? `${formatNumber(kph * KM_TO_MILES, locale, 0)} mph`
+        : `${formatNumber(kph, locale, 0)} km/h`;
     },
     diameterRange(minM, maxM) {
-      return formatDiameterRange(minM, maxM);
+      return formatDiameterRange(minM, maxM, locale);
     },
     int(n) {
-      return nf0.format(n);
+      return formatNumber(n, locale, 0);
     },
   };
 }

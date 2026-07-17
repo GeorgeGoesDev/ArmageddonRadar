@@ -12,6 +12,7 @@ import { formatInt, KM_TO_MILES } from '../utils/units';
 import { formatLocalDateTime, formatLocalTime } from '../utils/dates';
 import { isExpoGo, scheduleApproachReminder } from '../utils/notifications';
 import { useFormatters, useThresholds } from '../settings/useFormatters';
+import { useTranslation } from '../i18n/LocaleContext';
 import { useNeoDetail } from '../hooks/useNeoDetail';
 import { ApproachTimeline } from '../components/ApproachTimeline';
 import { ImpactReportSheet } from './ImpactReportSheet';
@@ -52,6 +53,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
   const [reminder, setReminder] = useState<ReminderState>({ status: 'idle' });
   const fmt = useFormatters();
   const thresholds = useThresholds();
+  const { locale } = useTranslation();
   const { width } = useWindowDimensions();
   const detail = useNeoDetail(asteroid?.id ?? null);
   const { settings } = useSettings();
@@ -86,8 +88,8 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
 
   const handleShare = async () => {
     const message =
-      `☄️ Asteroid ${asteroid.displayName} is passing within ${formatInt(asteroid.missMiles)} miles of Earth today ` +
-      `at ${formatInt(asteroid.velocityKph)} KPH. Verdict: ${threat.shortVerdict}! ` +
+      `☄️ Asteroid ${asteroid.displayName} is passing within ${formatInt(asteroid.missMiles, locale)} miles of Earth today ` +
+      `at ${formatInt(asteroid.velocityKph, locale)} KPH. Verdict: ${threat.shortVerdict}! ` +
       `— tracked with Armageddon Radar`;
     try {
       await Share.share({ message });
@@ -156,7 +158,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
             <DataRow label="Closest approach" value={asteroid.approachDateFull || formatLocalDateTime(asteroid.approachEpochMs)} />
             <DataRow label="Relative velocity" value={fmt.velocity(asteroid.velocityKph)} />
             <DataRow label="Miss distance" value={fmt.distanceFromLunar(asteroid.missLunar, asteroid.missKm, asteroid.missMiles)} />
-            <DataRow label="Estimated diameter" value={`${formatInt(asteroid.diameterMinM)} – ${formatInt(asteroid.diameterMaxM)} m`} />
+            <DataRow label="Estimated diameter" value={`${formatInt(asteroid.diameterMinM, locale)} – ${formatInt(asteroid.diameterMaxM, locale)} m`} />
             <DataRow label="Size, roughly" value={describeDiameter(asteroid.diameterAvgM)} />
 
             {/* Extended detail from /neo/{id} */}

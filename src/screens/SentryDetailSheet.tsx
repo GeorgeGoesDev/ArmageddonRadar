@@ -8,6 +8,7 @@ import { useSentryDetail } from '../hooks/useSentryDetail';
 import { TorinoChip } from '../components/TorinoChip';
 import { formatOdds } from '../utils/torino';
 import { formatInt } from '../utils/units';
+import { useTranslation } from '../i18n/LocaleContext';
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -25,6 +26,7 @@ const TORINO_CAPTION: Record<number, string> = {
 
 export function SentryDetailSheet({ risk, onClose }: { risk: SentryRisk | null; onClose: () => void }) {
   const { data, isLoading, isError } = useSentryDetail(risk?.designation ?? null);
+  const { locale } = useTranslation();
   if (!risk) return null;
 
   return (
@@ -46,7 +48,7 @@ export function SentryDetailSheet({ risk, onClose }: { risk: SentryRisk | null; 
 
             <Row label="Impact probability" value={`${formatOdds(risk.impactProb)} (${(risk.impactProb * 100).toExponential(1)}%)`} />
             <Row label="Potential impacts" value={`${risk.nImpacts} between ${risk.yearRange}`} />
-            <Row label="Estimated diameter" value={`${formatInt(risk.estDiameterM)} m`} />
+            <Row label="Estimated diameter" value={`${formatInt(risk.estDiameterM, locale)} m`} />
             <Row label="Palermo (cumulative)" value={risk.palermoCum.toFixed(2)} />
 
             {isLoading && <View className="py-6 items-center"><ActivityIndicator color={colors.accentBlue} /></View>}
@@ -54,7 +56,7 @@ export function SentryDetailSheet({ risk, onClose }: { risk: SentryRisk | null; 
             {data && (
               <>
                 <Row label="Palermo (max)" value={data.palermoMax.toFixed(2)} />
-                <Row label="Impact energy" value={`${formatInt(data.energyMt)} MT TNT`} />
+                <Row label="Impact energy" value={`${formatInt(data.energyMt, locale)} MT TNT`} />
                 <Row label="Mass" value={`${data.massKg.toExponential(2)} kg`} />
                 <Row label="Velocity (v∞)" value={`${data.vInfKps.toFixed(1)} km/s`} />
                 <Row label="First observed" value={data.firstObs} />
