@@ -22,6 +22,24 @@
           "photosPermission": "Allow Armageddon Radar to save NASA images to your gallery.",
           "savePhotosPermission": "Allow Armageddon Radar to save NASA images to your gallery."
         }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "NextApproach",
+              "label": "Next Approach",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "description": "The next asteroid approaching Earth",
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
       ]
     ],
     "ios": {
