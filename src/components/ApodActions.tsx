@@ -4,12 +4,19 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { Apod } from '../types/apod';
 import { saveApodToGallery, setApodAsWallpaper } from '../utils/apodImage';
+import { WallpaperTarget } from '../../modules/apod-wallpaper';
 import { hapticSuccess } from '../utils/haptics';
 import { useSettings } from '../settings/SettingsContext';
 
 type Job = 'save' | 'wallpaper';
 
 const DONE_DISPLAY_MS = 1500;
+
+const WALLPAPER_TARGETS: { target: WallpaperTarget; label: string }[] = [
+  { target: 'home', label: 'Home' },
+  { target: 'lock', label: 'Lock' },
+  { target: 'both', label: 'Both' },
+];
 
 function ActionButton({
   icon, label, busy, done, doneLabel, disabled, onPress,
@@ -50,11 +57,25 @@ function ActionButton({
   );
 }
 
+function ChoiceChip({ label, disabled, onPress }: { label: string; disabled: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      className="flex-1 items-center justify-center rounded-lg py-2"
+      style={{ backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.cardBorder }}
+    >
+      <Text className="text-xs font-semibold" style={{ color: colors.accentBlue }}>{label}</Text>
+    </Pressable>
+  );
+}
+
 export function ApodActions({ apod }: { apod: Apod }) {
   const { settings } = useSettings();
   const [busy, setBusy] = useState<Job | null>(null);
   const [done, setDone] = useState<Job | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [choosing, setChoosing] = useState(false);
   const doneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => () => {
@@ -85,6 +106,11 @@ export function ApodActions({ apod }: { apod: Apod }) {
     }
   }
 
+  function pickTarget(target: WallpaperTarget) {
+    setChoosing(false);
+    run('wallpaper', () => setApodAsWallpaper(apod, target));
+  }
+
   return (
     <View className="px-5 pt-3 pb-2" style={{ borderTopWidth: 1, borderTopColor: colors.gridLineFaint }}>
       <View className="flex-row" style={{ gap: 10 }}>
@@ -102,11 +128,26 @@ export function ApodActions({ apod }: { apod: Apod }) {
           label="Set as wallpaper"
           busy={busy === 'wallpaper'}
           done={done === 'wallpaper'}
-          doneLabel="Opening..."
+          doneLabel="Set"
           disabled={busy !== null}
-          onPress={() => run('wallpaper', () => setApodAsWallpaper(apod))}
+          onPress={() => {
+            setError(null);
+            setChoosing((c) => !c);
+          }}
         />
       </View>
+
+      {choosing && busy === null && (
+        <View className="mt-2">
+          <Text className="mb-1 text-[11px]" style={{ color: colors.textMuted }}>Set wallpaper on</Text>
+          <View className="flex-row" style={{ gap: 8 }}>
+            {WALLPAPER_TARGETS.map(({ target, label }) => (
+              <ChoiceChip key={target} label={label} disabled={false} onPress={() => pickTarget(target)} />
+            ))}
+          </View>
+        </View>
+      )}
+
       {!!error && (
         <Text className="mt-2 text-xs" style={{ color: colors.threatOrange }}>{error}</Text>
       )}

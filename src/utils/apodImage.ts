@@ -1,10 +1,7 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import { Asset, requestPermissionsAsync } from 'expo-media-library';
-import { startActivityAsync } from 'expo-intent-launcher';
 import { Apod } from '../types/apod';
-
-/** Android's FLAG_GRANT_READ_URI_PERMISSION: without it the target app cannot read our URI. */
-const FLAG_GRANT_READ_URI_PERMISSION = 1;
+import { setWallpaper, WallpaperTarget } from '../../modules/apod-wallpaper';
 
 function imageUrlFor(apod: Apod): string {
   const url = apod.hdImageUrl || apod.imageUrl;
@@ -48,21 +45,20 @@ export async function saveApodToGallery(apod: Apod): Promise<void> {
 }
 
 /**
- * Hands the image to Android's own "set wallpaper" flow. There is no Expo
- * wallpaper API; ACTION_ATTACH_DATA lets the system (MIUI's wallpaper editor,
- * on this device) supply the crop controls and the home/lock choice.
+ * Sets the APOD image as the wallpaper on the home screen, lock screen, or both.
+ *
+ * Uses the local `apod-wallpaper` native module (WallpaperManager.setStream)
+ * rather than an ACTION_ATTACH_DATA intent: MIUI's wallpaper cropper cannot read
+ * our granted content URI across processes and fails with "could not load data",
+ * so we read the file and set it ourselves. Applied without a crop step.
  */
-export async function setApodAsWallpaper(apod: Apod): Promise<void> {
+export async function setApodAsWallpaper(apod: Apod, target: WallpaperTarget): Promise<void> {
   const file = await downloadApodImage(apod);
   try {
-    await startActivityAsync('android.intent.action.ATTACH_DATA', {
-      data: file.contentUri,
-      type: 'image/*',
-      flags: FLAG_GRANT_READ_URI_PERMISSION,
-    });
-  } catch {
-    // No handler for ACTION_ATTACH_DATA on this device/launcher throws
-    // ActivityNotFoundException with a raw system message; keep that off the UI.
-    throw new Error('Could not open the wallpaper picker on this device.');
+    await setWallpaper(file.uri, target);
+  } catch (e) {
+    // Keep any raw native message off the UI; setWallpaper already throws
+    // user-safe Errors, but guard the unexpected case too.
+    throw new Error(e instanceof Error ? e.message : 'Could not set the wallpaper.');
   }
 }
