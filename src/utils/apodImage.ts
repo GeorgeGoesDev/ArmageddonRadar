@@ -16,8 +16,10 @@ function imageUrlFor(apod: Apod): string {
 export async function downloadApodImage(apod: Apod): Promise<File> {
   const url = imageUrlFor(apod);
   const dir = new Directory(Paths.cache, 'apod');
-  if (!dir.exists) dir.create();
   try {
+    // `Directory.create()` is synchronous and can throw (e.g. if the cache
+    // directory is missing or unwritable), so it must stay inside this guard.
+    if (!dir.exists) dir.create();
     // `idempotent: true` lets a second tap re-download over the same cached
     // file instead of rejecting with `DestinationAlreadyExists`.
     return await File.downloadFileAsync(url, dir, { idempotent: true });
@@ -31,9 +33,18 @@ export async function saveApodToGallery(apod: Apod): Promise<void> {
   const file = await downloadApodImage(apod);
   // requestPermissionsAsync(writeOnly?, granularPermissions?) takes positional
   // arguments in this SDK, not an options object.
-  const perm = await requestPermissionsAsync(false, ['photo']);
+  let perm;
+  try {
+    perm = await requestPermissionsAsync(false, ['photo']);
+  } catch {
+    throw new Error('Could not save the image to your gallery.');
+  }
   if (!perm.granted) throw new Error('Gallery permission denied.');
-  await Asset.create(file.uri);
+  try {
+    await Asset.create(file.uri);
+  } catch {
+    throw new Error('Could not save the image to your gallery.');
+  }
 }
 
 /**
@@ -43,9 +54,15 @@ export async function saveApodToGallery(apod: Apod): Promise<void> {
  */
 export async function setApodAsWallpaper(apod: Apod): Promise<void> {
   const file = await downloadApodImage(apod);
-  await startActivityAsync('android.intent.action.ATTACH_DATA', {
-    data: file.contentUri,
-    type: 'image/*',
-    flags: FLAG_GRANT_READ_URI_PERMISSION,
-  });
+  try {
+    await startActivityAsync('android.intent.action.ATTACH_DATA', {
+      data: file.contentUri,
+      type: 'image/*',
+      flags: FLAG_GRANT_READ_URI_PERMISSION,
+    });
+  } catch {
+    // No handler for ACTION_ATTACH_DATA on this device/launcher throws
+    // ActivityNotFoundException with a raw system message; keep that off the UI.
+    throw new Error('Could not open the wallpaper picker on this device.');
+  }
 }
