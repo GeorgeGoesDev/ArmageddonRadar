@@ -139,6 +139,18 @@ describe('selectNextApproach', () => {
   it('treats an approach exactly at now as live (inclusive)', () => {
     expect(selectNextApproach(snap, NOW + HOUR).kind).toBe('live');
   });
+
+  it('falls back to DEFAULT_CHROME for a live/expired pre-i18n snapshot with no chrome', () => {
+    // A Phase 4b snapshot survives the upgrade under the same key with entries
+    // but no chrome; the headless render must not crash on undefined chrome.
+    const legacy = { entries: snap.entries, builtAtMs: NOW } as unknown as WidgetSnapshot;
+    const live = selectNextApproach(legacy, NOW);
+    expect(live.kind).toBe('live');
+    expect(live.chrome).toEqual(DEFAULT_CHROME);
+    const expired = selectNextApproach(legacy, NOW + 2 * HOUR);
+    expect(expired.kind).toBe('expired');
+    expect(expired.chrome).toEqual(DEFAULT_CHROME);
+  });
 });
 
 describe('formatApproachTime', () => {

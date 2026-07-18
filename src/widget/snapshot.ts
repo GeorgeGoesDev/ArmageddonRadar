@@ -103,9 +103,14 @@ export function selectNextApproach(snapshot: WidgetSnapshot | null, now: number)
   // Guard the shape, not just null: the snapshot comes from persisted JSON, so a
   // partial write or a reused key could deserialize to something without a valid
   // entries array. The headless handler relies on this never throwing.
+  // A pre-i18n (Phase 4b) snapshot survives the upgrade under the same
+  // `widget:snapshot:v1` key with `entries` but no `chrome`, so default it in
+  // every branch — the headless render dereferences chrome and would crash on
+  // `undefined`.
+  const chrome = snapshot?.chrome ?? DEFAULT_CHROME;
   if (!snapshot || !Array.isArray(snapshot.entries) || snapshot.entries.length === 0) {
-    return { kind: 'empty', chrome: snapshot?.chrome ?? DEFAULT_CHROME };
+    return { kind: 'empty', chrome };
   }
   const next = snapshot.entries.find((e) => e.approachEpochMs >= now);
-  return next ? { kind: 'live', entry: next, chrome: snapshot.chrome } : { kind: 'expired', chrome: snapshot.chrome };
+  return next ? { kind: 'live', entry: next, chrome } : { kind: 'expired', chrome };
 }
