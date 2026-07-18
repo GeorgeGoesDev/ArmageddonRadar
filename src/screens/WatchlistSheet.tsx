@@ -9,6 +9,7 @@ import { useWatchlist } from '../watchlist/WatchlistContext';
 import { useNeoDetail } from '../hooks/useNeoDetail';
 import { AsteroidCard } from '../components/AsteroidCard';
 import { useTranslation } from '../i18n/LocaleContext';
+import { formatNumber } from '../i18n/format';
 
 function cleanName(name: string): string {
   return name.replace(/^\(|\)$/g, '').trim();
@@ -18,7 +19,7 @@ function cleanName(name: string): string {
 function RemoteRow({ id }: { id: string }) {
   const { data, isLoading } = useNeoDetail(id);
   const { toggle } = useWatchlist();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const name = data ? cleanName(data.name) : id;
   const next = data
     ? data.approaches
@@ -31,7 +32,7 @@ function RemoteRow({ id }: { id: string }) {
     : next && nextDate
       ? t('watchlist.nextApproach', {
           date: `${String(nextDate.getDate()).padStart(2, '0')} ${t('dates.mon' + nextDate.getMonth())}`,
-          distance: next.missLunar.toFixed(1),
+          distance: formatNumber(next.missLunar, locale, 1),
         })
       : t('watchlist.notApproaching');
 

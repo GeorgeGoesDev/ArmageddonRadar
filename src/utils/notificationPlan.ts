@@ -3,7 +3,7 @@ import { NeoWeek } from '../api/nasa';
 import { getThreatLevel, ThreatThresholds } from './threat';
 import type { TFunc } from '../i18n/LocaleContext';
 import type { Locale } from '../i18n/i18n';
-import { formatNumber } from '../i18n/format';
+import { formatNumber, lunarUnit } from '../i18n/format';
 
 export interface DigestPlan {
   fireDate: Date;
@@ -56,7 +56,7 @@ export function planDailyDigests(
       title: t('notify.digestTitle'),
       body: t('notify.digestBody', {
         name: closest.displayName,
-        distance: `${formatNumber(closest.missLunar, locale, 1)} LD`,
+        distance: `${formatNumber(closest.missLunar, locale, 1)} ${lunarUnit(locale)}`,
         threat: threatLabel(closest.missLunar, thresholds, t),
       }),
     });
@@ -91,6 +91,6 @@ export function planSmartAlerts(
       fireDate: new Date(a.approachEpochMs),
       asteroidId: a.id,
       title: t('notify.alertTitle'),
-      body: t('notify.alertBody', { name: a.displayName, distance: `${formatNumber(a.missLunar, locale, 1)} LD` }),
+      body: t('notify.alertBody', { name: a.displayName, distance: `${formatNumber(a.missLunar, locale, 1)} ${lunarUnit(locale)}` }),
     }));
 }

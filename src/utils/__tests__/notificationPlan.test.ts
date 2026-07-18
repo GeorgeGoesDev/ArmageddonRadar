@@ -83,7 +83,7 @@ describe('planDailyDigests', () => {
       '2099-01-01': [mkAst({ id: 'd', displayName: 'Delta', missLunar: 1234.5 })],
     };
     const p = planDailyDigests(bigWeek, 9, thresholds, now, fakeT, 'el')[0];
-    expect(p.body).toContain('1.234,5 LD');
+    expect(p.body).toContain('1.234,5 ΣΑ');
   });
 });
 
@@ -136,6 +136,6 @@ describe('planSmartAlerts', () => {
       d1: [mkAst({ id: 'e', displayName: 'Echo', missLunar: 0.5, approachEpochMs: now + 10_000 })],
     };
     const alerts = planSmartAlerts(week, 1, now, fakeT, 'el');
-    expect(alerts[0].body).toBe('Echo passes 0,5 LD away at closest approach.');
+    expect(alerts[0].body).toBe('Echo passes 0,5 ΣΑ away at closest approach.');
   });
 });
