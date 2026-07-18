@@ -4,6 +4,7 @@ import { NeoWeek } from '../api/nasa';
 import { colors } from '../theme/colors';
 import { getThreatLevel } from '../utils/threat';
 import { useThresholds } from '../settings/useFormatters';
+import { useTranslation, TFunc } from '../i18n/LocaleContext';
 
 interface Props {
   week: NeoWeek;
@@ -16,13 +17,14 @@ function closestLunar(list: NeoWeek[string]): number | null {
   return list.reduce((m, a) => Math.min(m, a.missLunar), Infinity);
 }
 
-function weekdayLabel(key: string): string {
+function weekdayLabel(key: string, t: TFunc): string {
   const [y, m, d] = key.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString([], { weekday: 'short' });
+  return t('dates.wd' + new Date(y, m - 1, d).getDay());
 }
 
 export function DaySelector({ week, selectedDateKey, onSelect }: Props) {
   const thresholds = useThresholds();
+  const { t } = useTranslation();
   const keys = Object.keys(week);
 
   return (
@@ -48,7 +50,7 @@ export function DaySelector({ week, selectedDateKey, onSelect }: Props) {
             }}
           >
             <Text className="text-[11px] uppercase" style={{ color: colors.textMuted }}>
-              {weekdayLabel(key)}
+              {weekdayLabel(key, t)}
             </Text>
             <View className="h-1.5 w-1.5 rounded-full my-1" style={{ backgroundColor: zoneColor }} />
             <Text className="text-xs font-bold" style={{ color: colors.textPrimary }}>

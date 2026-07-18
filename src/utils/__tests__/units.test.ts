@@ -22,7 +22,7 @@ describe('makeFormatters', () => {
 describe('makeFormatters locale', () => {
   it('formats distance in Greek separators', () => {
     const f = makeFormatters({ distanceUnit: 'lunar', velocityUnit: 'kph' }, 'el');
-    expect(f.distanceFromLunar(3.4, 0, 0)).toBe('3,4 LD');
+    expect(f.distanceFromLunar(3.4, 0, 0)).toBe('3,4 ΣΑ');
   });
   it('formats km thousands in Greek', () => {
     const f = makeFormatters({ distanceUnit: 'km', velocityUnit: 'kph' }, 'el');

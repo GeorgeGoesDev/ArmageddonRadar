@@ -75,7 +75,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
         status: 'done',
         message: res.adjusted
           ? t('detail.reminderAdjusted', { time: formatLocalTime(res.fireDate.getTime()) })
-          : t('detail.reminderSet', { time: formatLocalDateTime(res.fireDate.getTime()) }),
+          : t('detail.reminderSet', { time: formatLocalDateTime(res.fireDate.getTime(), t) }),
       });
       hapticSuccess(settings.hapticsEnabled);
     } catch (e) {
@@ -157,7 +157,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
             <Text className="mt-4 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>
               {t('detail.orbitalMechanics')}
             </Text>
-            <DataRow label={t('detail.closestApproach')} value={asteroid.approachDateFull || formatLocalDateTime(asteroid.approachEpochMs)} />
+            <DataRow label={t('detail.closestApproach')} value={asteroid.approachDateFull || formatLocalDateTime(asteroid.approachEpochMs, t)} />
             <DataRow label={t('detail.relativeVelocity')} value={fmt.velocity(asteroid.velocityKph)} />
             <DataRow label={t('detail.missDistance')} value={fmt.distanceFromLunar(asteroid.missLunar, asteroid.missKm, asteroid.missMiles)} />
             <DataRow label={t('detail.estimatedDiameter')} value={`${formatInt(asteroid.diameterMinM, locale)} – ${formatInt(asteroid.diameterMaxM, locale)} m`} />

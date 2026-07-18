@@ -5,6 +5,7 @@ import Slider from '@react-native-community/slider';
 import { colors } from '../theme/colors';
 import { ListControls } from '../utils/listControls';
 import { useTranslation } from '../i18n/LocaleContext';
+import { formatNumber, lunarUnit } from '../i18n/format';
 
 interface Props {
   visible: boolean;
@@ -16,9 +17,9 @@ interface Props {
 const MAX_LUNAR_CAP = 20;
 
 export function FilterSheet({ visible, controls, onChange, onClose }: Props) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const distanceValue = Number.isFinite(controls.maxLunar) ? controls.maxLunar : MAX_LUNAR_CAP;
-  const withinValue = distanceValue >= MAX_LUNAR_CAP ? t('controls.anyDistance') : `${distanceValue.toFixed(1)} LD`;
+  const withinValue = distanceValue >= MAX_LUNAR_CAP ? t('controls.anyDistance') : `${formatNumber(distanceValue, locale, 1)} ${lunarUnit(locale)}`;
   return (
     <Modal visible={visible} transparent statusBarTranslucent navigationBarTranslucent animationType="slide" onRequestClose={onClose}>
       <SafeAreaProvider style={{ flex: 1 }}>

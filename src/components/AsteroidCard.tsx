@@ -62,6 +62,8 @@ export function AsteroidCard({ asteroid, selected, onPress, onDetails }: Asteroi
     if (!watched) hapticSuccess(settings.hapticsEnabled);
     toggle(asteroid.id);
   };
+  const approachDate = new Date(asteroid.approachEpochMs);
+  const approachLabel = `${String(approachDate.getDate()).padStart(2, '0')} ${t('dates.mon' + approachDate.getMonth())}`;
   return (
     <Pressable
       onPress={onPress}
@@ -115,7 +117,7 @@ export function AsteroidCard({ asteroid, selected, onPress, onDetails }: Asteroi
       </View>
       <View className="flex-row mt-3">
         <Metric icon="moon-waning-crescent" label={t('card.miss')} value={fmt.distanceFromLunar(asteroid.missLunar, asteroid.missKm, asteroid.missMiles)} highlight={selected} />
-        <Metric icon="earth" label={t('card.approach')} value={new Date(asteroid.approachEpochMs).toLocaleDateString([], { day: '2-digit', month: 'short' })} highlight={selected} />
+        <Metric icon="earth" label={t('card.approach')} value={approachLabel} highlight={selected} />
       </View>
 
       {/* Fun size comparison */}

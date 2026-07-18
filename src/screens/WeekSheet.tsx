@@ -7,17 +7,21 @@ import { colors } from '../theme/colors';
 import { getThreatLevel } from '../utils/threat';
 import { useThresholds } from '../settings/useFormatters';
 import { useTranslation } from '../i18n/LocaleContext';
+import { formatNumber, lunarUnit } from '../i18n/format';
+import type { TFunc } from '../i18n/LocaleContext';
 
 const MAX_BAR_LD = 15;
 
-function dayLabel(key: string): string {
+function dayLabel(key: string, t: TFunc): string {
   const [y, m, d] = key.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString([], { weekday: 'short', day: '2-digit' });
+  const dt = new Date(y, m - 1, d);
+  const dd = String(dt.getDate()).padStart(2, '0');
+  return `${t('dates.wd' + dt.getDay())} ${dd}`;
 }
 
 export function WeekSheet({ visible, week, onClose, onSelectDay }: { visible: boolean; week: NeoWeek; onClose: () => void; onSelectDay: (key: string) => void }) {
   const thresholds = useThresholds();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const keys = Object.keys(week);
 
   return (
@@ -42,10 +46,10 @@ export function WeekSheet({ visible, week, onClose, onSelectDay }: { visible: bo
               <Pressable key={key} onPress={() => { onSelectDay(key); onClose(); }} className="mb-3">
                 <View className="flex-row items-center justify-between mb-1">
                   <Text className="text-xs" style={{ color: colors.textPrimary }}>
-                    {dayLabel(key)} {hazardous ? '⚠️' : ''}
+                    {dayLabel(key, t)} {hazardous ? '⚠️' : ''}
                   </Text>
                   <Text className="text-xs" style={{ color: colors.textMuted }}>
-                    {closest === null ? t('week.clear') : `${closest.toFixed(1)} LD`}
+                    {closest === null ? t('week.clear') : `${formatNumber(closest, locale, 1)} ${lunarUnit(locale)}`}
                   </Text>
                 </View>
                 <View className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: colors.charcoal }}>

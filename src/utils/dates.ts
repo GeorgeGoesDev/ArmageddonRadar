@@ -1,3 +1,5 @@
+import type { TFunc } from '../i18n/LocaleContext';
+
 /**
  * Returns a `YYYY-MM-DD` string in the device's *local* timezone.
  *
@@ -21,14 +23,13 @@ export function formatLocalTime(epochMs: number): string {
 }
 
 /** Human-friendly local date + time, e.g. "15 Jul 2026, 14:32". */
-export function formatLocalDateTime(epochMs: number): string {
-  return new Date(epochMs).toLocaleString([], {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+export function formatLocalDateTime(epochMs: number, t: TFunc): string {
+  const d = new Date(epochMs);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const HH = String(d.getHours()).padStart(2, '0');
+  const MM = String(d.getMinutes()).padStart(2, '0');
+  return `${dd} ${t('dates.mon' + d.getMonth())} ${yyyy}, ${HH}:${MM}`;
 }
 
 /**

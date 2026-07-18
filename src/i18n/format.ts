@@ -17,6 +17,11 @@ export function formatNumber(value: number, locale: Locale, fractionDigits = 0):
   return neg ? `-${body}` : body;
 }
 
+/** Bare-code suffix for lunar-distance values: 'LD' in English, 'ΣΑ' (Σεληνιακή Απόσταση) in Greek. */
+export function lunarUnit(locale: Locale): string {
+  return locale === 'el' ? 'ΣΑ' : 'LD';
+}
+
 /** Device language on first launch: Greek device → 'el', else 'en'. */
 export function detectDeviceLocale(): Locale {
   try {

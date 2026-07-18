@@ -25,11 +25,12 @@ function RemoteRow({ id }: { id: string }) {
         .filter((a) => a.orbitingBody === 'Earth' && a.epochMs > Date.now())
         .sort((a, b) => a.epochMs - b.epochMs)[0]
     : undefined;
+  const nextDate = next ? new Date(next.epochMs) : undefined;
   const subtitle = isLoading
     ? t('watchlist.loading')
-    : next
+    : next && nextDate
       ? t('watchlist.nextApproach', {
-          date: new Date(next.epochMs).toLocaleDateString([], { day: '2-digit', month: 'short' }),
+          date: `${String(nextDate.getDate()).padStart(2, '0')} ${t('dates.mon' + nextDate.getMonth())}`,
           distance: next.missLunar.toFixed(1),
         })
       : t('watchlist.notApproaching');

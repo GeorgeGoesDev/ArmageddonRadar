@@ -1,6 +1,6 @@
 /** Formatting + unit conversion helpers. */
 
-import { formatNumber } from '../i18n/format';
+import { formatNumber, lunarUnit } from '../i18n/format';
 import type { Locale } from '../i18n/i18n';
 
 export const KM_TO_MILES = 0.621371;
@@ -39,7 +39,7 @@ export function makeFormatters(prefs: UnitPrefs, locale: Locale): Formatters {
           return `${formatNumber(milesValue, locale, 0)} mi`;
         case 'lunar':
         default:
-          return `${formatNumber(lunar, locale, 1)} LD`;
+          return `${formatNumber(lunar, locale, 1)} ${lunarUnit(locale)}`;
       }
     },
     velocity(kph) {
