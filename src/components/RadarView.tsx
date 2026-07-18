@@ -13,6 +13,8 @@ import { asteroidColor } from '../utils/asteroidColor';
 import { colors } from '../theme/colors';
 import { Asteroid } from '../types/neo';
 import { angleFromId, clamp, polarToCartesian } from '../utils/geometry';
+import { useTranslation } from '../i18n/LocaleContext';
+import { formatNumber, lunarUnit } from '../i18n/format';
 
 // Precomputed fading tail for the radar sweep: a fan of lines trailing the
 // leading edge, each dimmer than the last, so it reads as a smooth glowing wipe.
@@ -35,6 +37,7 @@ interface RadarViewProps {
  * it, staying in sync with the tracking card list.
  */
 export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: RadarViewProps) {
+  const { locale } = useTranslation();
   const cx = size / 2;
   const cy = size / 2;
   const maxR = size / 2 - 12;
@@ -133,7 +136,7 @@ export function RadarView({ asteroids, selectedId, onSelect, size = 300 }: Radar
             fontSize={9}
             opacity={0.7}
           >
-            {(maxLunar * f).toFixed(0)} LD
+            {formatNumber(maxLunar * f, locale, 0)} {lunarUnit(locale)}
           </SvgText>
         ))}
 

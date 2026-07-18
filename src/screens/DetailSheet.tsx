@@ -5,13 +5,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Asteroid } from '../types/neo';
 import { colors } from '../theme/colors';
-import { getThreatLevel } from '../utils/threat';
+import { getThreatLevel, threatShortVerdict } from '../utils/threat';
 import { asteroidColor } from '../utils/asteroidColor';
 import { describeDiameter } from '../data/diameterComparisons';
 import { formatInt, KM_TO_MILES } from '../utils/units';
+import { formatNumber } from '../i18n/format';
 import { formatLocalDateTime, formatLocalTime } from '../utils/dates';
-import { isExpoGo, scheduleApproachReminder } from '../utils/notifications';
+import { scheduleApproachReminder } from '../utils/notifications';
 import { useFormatters, useThresholds } from '../settings/useFormatters';
+import { useTranslation } from '../i18n/LocaleContext';
 import { useNeoDetail } from '../hooks/useNeoDetail';
 import { ApproachTimeline } from '../components/ApproachTimeline';
 import { ImpactReportSheet } from './ImpactReportSheet';
@@ -52,6 +54,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
   const [reminder, setReminder] = useState<ReminderState>({ status: 'idle' });
   const fmt = useFormatters();
   const thresholds = useThresholds();
+  const { locale, t } = useTranslation();
   const { width } = useWindowDimensions();
   const detail = useNeoDetail(asteroid?.id ?? null);
   const { settings } = useSettings();
@@ -68,27 +71,29 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
   const handleReminder = async () => {
     setReminder({ status: 'loading' });
     try {
-      const res = await scheduleApproachReminder(asteroid);
+      const res = await scheduleApproachReminder(asteroid, t, locale);
       setReminder({
         status: 'done',
         message: res.adjusted
-          ? `Approach already passed today — demo reminder set for ${formatLocalTime(res.fireDate.getTime())}.`
-          : `Reminder set for ${formatLocalDateTime(res.fireDate.getTime())}.`,
+          ? t('detail.reminderAdjusted', { time: formatLocalTime(res.fireDate.getTime()) })
+          : t('detail.reminderSet', { time: formatLocalDateTime(res.fireDate.getTime(), t) }),
       });
       hapticSuccess(settings.hapticsEnabled);
     } catch (e) {
       setReminder({
         status: 'error',
-        message: e instanceof Error ? e.message : 'Could not set reminder.',
+        message: e instanceof Error ? e.message : t('detail.reminderError'),
       });
     }
   };
 
   const handleShare = async () => {
-    const message =
-      `☄️ Asteroid ${asteroid.displayName} is passing within ${formatInt(asteroid.missMiles)} miles of Earth today ` +
-      `at ${formatInt(asteroid.velocityKph)} KPH. Verdict: ${threat.shortVerdict}! ` +
-      `— tracked with Armageddon Radar`;
+    const message = t('detail.shareMessage', {
+      name: asteroid.displayName,
+      miles: formatInt(asteroid.missMiles, locale),
+      kph: formatInt(asteroid.velocityKph, locale),
+      verdict: threatShortVerdict(t, threat.zone),
+    });
     try {
       await Share.share({ message });
     } catch {
@@ -143,7 +148,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
               </View>
             </View>
             <Text className="mt-1 text-xs" style={{ color: threat.color }}>
-              {asteroid.hazardous ? '⚠️ Potentially hazardous object' : '✓ Not classified as hazardous'}
+              {asteroid.hazardous ? t('detail.hazardousObject') : t('detail.notHazardous')}
             </Text>
           </LinearGradient>
 
@@ -151,13 +156,13 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
           <ScrollView className="px-5" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             {/* Orbital data */}
             <Text className="mt-4 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>
-              Orbital mechanics
+              {t('detail.orbitalMechanics')}
             </Text>
-            <DataRow label="Closest approach" value={asteroid.approachDateFull || formatLocalDateTime(asteroid.approachEpochMs)} />
-            <DataRow label="Relative velocity" value={fmt.velocity(asteroid.velocityKph)} />
-            <DataRow label="Miss distance" value={fmt.distanceFromLunar(asteroid.missLunar, asteroid.missKm, asteroid.missMiles)} />
-            <DataRow label="Estimated diameter" value={`${formatInt(asteroid.diameterMinM)} – ${formatInt(asteroid.diameterMaxM)} m`} />
-            <DataRow label="Size, roughly" value={describeDiameter(asteroid.diameterAvgM)} />
+            <DataRow label={t('detail.closestApproach')} value={asteroid.approachDateFull || formatLocalDateTime(asteroid.approachEpochMs, t)} />
+            <DataRow label={t('detail.relativeVelocity')} value={fmt.velocity(asteroid.velocityKph)} />
+            <DataRow label={t('detail.missDistance')} value={fmt.distanceFromLunar(asteroid.missLunar, asteroid.missKm, asteroid.missMiles)} />
+            <DataRow label={t('detail.estimatedDiameter')} value={`${formatInt(asteroid.diameterMinM, locale)} – ${formatInt(asteroid.diameterMaxM, locale)} m`} />
+            <DataRow label={t('detail.sizeRoughly')} value={describeDiameter(asteroid.diameterAvgM, t)} />
 
             {/* Extended detail from /neo/{id} */}
             {detail.isLoading && (
@@ -165,24 +170,24 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
             )}
             {detail.isError && (
               <Text className="py-4 text-center text-xs" style={{ color: colors.textMuted }}>
-                Extended orbital data unavailable.
+                {t('detail.extendedDataUnavailable')}
               </Text>
             )}
             {detail.data && (
               <>
-                <Text className="mt-6 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>Orbital elements</Text>
-                <DataRow label="Semi-major axis" value={`${detail.data.orbital.semiMajorAxisAu.toFixed(3)} AU`} />
-                <DataRow label="Eccentricity" value={detail.data.orbital.eccentricity.toFixed(3)} />
-                <DataRow label="Inclination" value={`${detail.data.orbital.inclinationDeg.toFixed(1)}°`} />
-                <DataRow label="Orbital period" value={`${fmt.int(detail.data.orbital.orbitalPeriodDays)} days`} />
-                <DataRow label="Perihelion / aphelion" value={`${detail.data.orbital.perihelionAu.toFixed(2)} / ${detail.data.orbital.aphelionAu.toFixed(2)} AU`} />
-                <DataRow label="Orbit class" value={detail.data.orbital.orbitClassType} />
+                <Text className="mt-6 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>{t('detail.orbitalElements')}</Text>
+                <DataRow label={t('detail.semiMajorAxis')} value={`${formatNumber(detail.data.orbital.semiMajorAxisAu, locale, 3)} AU`} />
+                <DataRow label={t('detail.eccentricity')} value={formatNumber(detail.data.orbital.eccentricity, locale, 3)} />
+                <DataRow label={t('detail.inclination')} value={`${formatNumber(detail.data.orbital.inclinationDeg, locale, 1)}°`} />
+                <DataRow label={t('detail.orbitalPeriod')} value={`${fmt.int(detail.data.orbital.orbitalPeriodDays)} ${t('common.days')}`} />
+                <DataRow label={t('detail.perihelionAphelion')} value={`${formatNumber(detail.data.orbital.perihelionAu, locale, 2)} / ${formatNumber(detail.data.orbital.aphelionAu, locale, 2)} AU`} />
+                <DataRow label={t('detail.orbitClass')} value={detail.data.orbital.orbitClassType} />
 
                 {detail.data.approaches.length > 0 && (
                   <>
-                    <Text className="mt-6 mb-2 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>Approach timeline</Text>
+                    <Text className="mt-6 mb-2 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>{t('detail.approachTimeline')}</Text>
                     <ApproachTimeline approaches={detail.data.approaches} width={width - 40} />
-                    <Text className="mt-4 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>Close-approach history</Text>
+                    <Text className="mt-4 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>{t('detail.closeApproachHistory')}</Text>
                     {detail.data.approaches.slice(0, 20).map((a, i) => (
                       <View key={i} className="flex-row justify-between py-2" style={{ borderBottomWidth: 1, borderBottomColor: colors.gridLineFaint }}>
                         <Text className="text-xs" style={{ color: colors.textMuted }}>{a.dateFull}</Text>
@@ -192,10 +197,10 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
                   </>
                 )}
 
-                <Text className="mt-6 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>More</Text>
-                <DataRow label="Orbit class detail" value={detail.data.orbital.orbitClassDescription} />
-                <DataRow label="First / last observed" value={`${detail.data.orbital.firstObservation} → ${detail.data.orbital.lastObservation}`} />
-                <DataRow label="Absolute magnitude (H)" value={detail.data.absoluteMagnitude.toFixed(1)} />
+                <Text className="mt-6 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>{t('detail.more')}</Text>
+                <DataRow label={t('detail.orbitClassDetail')} value={detail.data.orbital.orbitClassDescription} />
+                <DataRow label={t('detail.firstLastObserved')} value={`${detail.data.orbital.firstObservation} → ${detail.data.orbital.lastObservation}`} />
+                <DataRow label={t('detail.absoluteMagnitude')} value={formatNumber(detail.data.absoluteMagnitude, locale, 1)} />
               </>
             )}
 
@@ -212,7 +217,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
                 <>
                   <MaterialCommunityIcons name="telescope" size={20} color={colors.textPrimary} />
                   <Text className="ml-2 text-base font-bold" style={{ color: colors.textPrimary }}>
-                    Set Telescope Reminder
+                    {t('detail.setReminder')}
                   </Text>
                 </>
               )}
@@ -225,11 +230,6 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
                 {reminder.message}
               </Text>
             )}
-            {isExpoGo && reminder.status === 'idle' && (
-              <Text className="mt-2 text-center text-[11px]" style={{ color: colors.textMuted }}>
-                Note: in Expo Go this is a preview — reminders fire in a development build.
-              </Text>
-            )}
 
             {/* Simulate impact */}
             <Pressable
@@ -238,7 +238,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
               style={{ backgroundColor: colors.threatOrange }}
             >
               <MaterialCommunityIcons name="bomb" size={20} color={colors.spaceBlack} />
-              <Text className="ml-2 text-base font-bold" style={{ color: colors.spaceBlack }}>💥 Simulate impact</Text>
+              <Text className="ml-2 text-base font-bold" style={{ color: colors.spaceBlack }}>{t('detail.simulateImpact')}</Text>
             </Pressable>
 
             {/* Share */}
@@ -249,7 +249,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
             >
               <MaterialCommunityIcons name="share-variant" size={20} color={colors.accentBlue} />
               <Text className="ml-2 text-base font-bold" style={{ color: colors.accentBlue }}>
-                Share the cosmic gossip
+                {t('detail.shareCosmicGossip')}
               </Text>
             </Pressable>
           </ScrollView>

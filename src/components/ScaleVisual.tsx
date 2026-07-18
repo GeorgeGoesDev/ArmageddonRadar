@@ -4,6 +4,7 @@ import Svg, { Circle, Line, Rect, Text as SvgText } from 'react-native-svg';
 import { bestFitLandmark } from '../data/diameterComparisons';
 import { formatInt } from '../utils/units';
 import { colors } from '../theme/colors';
+import { useTranslation } from '../i18n/LocaleContext';
 
 /**
  * Draws the asteroid to scale beside its best-fit landmark. The asteroid fills
@@ -11,6 +12,7 @@ import { colors } from '../theme/colors';
  * you see the asteroid dwarf it.
  */
 export function ScaleVisual({ diameterM, width }: { diameterM: number; width: number }) {
+  const { t, locale } = useTranslation();
   const height = 150;
   const fit = bestFitLandmark(diameterM);
   const baseY = height - 22;
@@ -34,7 +36,7 @@ export function ScaleVisual({ diameterM, width }: { diameterM: number; width: nu
         {/* Asteroid */}
         <Circle cx={astCx} cy={astCy} r={astR} fill={colors.spaceSlate} stroke={colors.accentBlue} strokeWidth={2} />
         <SvgText x={astCx} y={astCy + 4} fill={colors.textPrimary} fontSize={12} fontWeight="700" textAnchor="middle">
-          {formatInt(diameterM)} m
+          {formatInt(diameterM, locale)} m
         </SvgText>
         {/* Landmark silhouette + label */}
         <Rect x={lmX - lmW / 2} y={baseY - lmHpx} width={lmW} height={lmHpx} rx={2} fill={colors.textMuted} />
@@ -43,7 +45,13 @@ export function ScaleVisual({ diameterM, width }: { diameterM: number; width: nu
         </SvgText>
       </Svg>
       <Text className="text-center text-xs" style={{ color: colors.accentBlue }}>
-        {fit ? `≈ ${fit.count} ${fit.count === 1 ? fit.landmark.singular : fit.landmark.plural} ${fit.landmark.emoji}` : 'Smaller than a garden gnome 🗿'}
+        {fit
+          ? t('impact.scaleFit', {
+              count: fit.count,
+              landmark: t(fit.count === 1 ? fit.landmark.labelKey : fit.landmark.pluralKey),
+              emoji: fit.landmark.emoji,
+            })
+          : t('impact.scaleFallback')}
       </Text>
     </View>
   );

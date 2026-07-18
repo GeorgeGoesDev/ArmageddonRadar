@@ -3,11 +3,19 @@ import {
   selectNextApproach,
   formatApproachTime,
   WidgetSnapshot,
+  WidgetChrome,
 } from '../snapshot';
 import type { NeoWeek } from '../../api/nasa';
 import type { Asteroid } from '../../types/neo';
 
 const thresholds = { dangerLD: 1, safeLD: 5 };
+
+// Fake `t`: returns the key itself (with any params appended) so assertions
+// can check the right catalog key was requested without depending on i18n-js.
+function fakeT(key: string, params?: Record<string, unknown>): string {
+  if (!params) return key;
+  return `${key}(${Object.entries(params).map(([k, v]) => `${k}=${v}`).join(',')})`;
+}
 
 function ast(id: string, missLunar: number, approachEpochMs: number): Asteroid {
   return {
@@ -31,23 +39,55 @@ describe('buildWidgetSnapshot', () => {
         ast('later', 8, NOW + 5 * HOUR),
       ],
     };
-    const snap = buildWidgetSnapshot(week, thresholds, NOW);
+    const snap = buildWidgetSnapshot(week, thresholds, NOW, fakeT, 'en');
     expect(snap.entries.map((e) => e.name)).toEqual(['soon', 'later']);
     expect(snap.entries[0].distance).toBe('3.4 LD');
-    expect(snap.entries[0].threatLabel).toBe('CAUTION'); // 1 <= 3.4 <= 5 -> watch
+    expect(snap.entries[0].threatLabel).toBe('widget.labelCaution'); // 1 <= 3.4 <= 5 -> watch
     expect(snap.entries.length).toBeLessThanOrEqual(10);
   });
 
   it('returns an empty snapshot for an all-past / empty feed', () => {
-    expect(buildWidgetSnapshot({ '2026-07-17': [ast('p', 2, NOW - HOUR)] }, thresholds, NOW).entries).toEqual([]);
-    expect(buildWidgetSnapshot({}, thresholds, NOW).entries).toEqual([]);
+    expect(buildWidgetSnapshot({ '2026-07-17': [ast('p', 2, NOW - HOUR)] }, thresholds, NOW, fakeT, 'en').entries).toEqual([]);
+    expect(buildWidgetSnapshot({}, thresholds, NOW, fakeT, 'en').entries).toEqual([]);
   });
 
   it('labels a sub-danger object HAZARDOUS', () => {
-    const snap = buildWidgetSnapshot({ '2026-07-17': [ast('close', 0.5, NOW + HOUR)] }, thresholds, NOW);
-    expect(snap.entries[0].threatLabel).toBe('HAZARDOUS');
+    const snap = buildWidgetSnapshot({ '2026-07-17': [ast('close', 0.5, NOW + HOUR)] }, thresholds, NOW, fakeT, 'en');
+    expect(snap.entries[0].threatLabel).toBe('widget.labelHazardous');
+  });
+
+  it('formats the distance with locale-specific separators', () => {
+    const snap = buildWidgetSnapshot({ '2026-07-17': [ast('far', 1234.5, NOW + HOUR)] }, thresholds, NOW, fakeT, 'el');
+    expect(snap.entries[0].distance).toBe('1.234,5 LD');
+  });
+
+  it('builds chrome from the catalog via `t`', () => {
+    const snap = buildWidgetSnapshot({ '2026-07-17': [ast('soon', 3.4, NOW + HOUR)] }, thresholds, NOW, fakeT, 'en');
+    expect(snap.chrome).toEqual({
+      nextApproach: 'widget.nextApproach',
+      radar: 'widget.radar',
+      expired: 'widget.expired',
+      tapRefresh: 'widget.tapRefresh',
+      tapStart: 'widget.tapStart',
+    });
   });
 });
+
+const elChrome: WidgetChrome = {
+  nextApproach: 'ΕΠΟΜΕΝΗ ΠΡΟΣΕΓΓΙΣΗ',
+  radar: 'ΡΑΝΤΑΡ',
+  expired: 'Τα δεδομένα ραντάρ έληξαν',
+  tapRefresh: 'Πάτησε για ανανέωση',
+  tapStart: 'Πάτησε για να ξεκινήσεις παρακολούθηση',
+};
+
+const DEFAULT_CHROME: WidgetChrome = {
+  nextApproach: 'NEXT APPROACH',
+  radar: 'RADAR',
+  expired: 'Radar data expired',
+  tapRefresh: 'Tap to refresh',
+  tapStart: 'Tap to start tracking',
+};
 
 describe('selectNextApproach', () => {
   const snap: WidgetSnapshot = {
@@ -55,21 +95,30 @@ describe('selectNextApproach', () => {
       { name: 'a', distance: '2.0 LD', approachEpochMs: NOW + HOUR, absoluteTime: 'Today 13:00', threatLabel: 'CAUTION', threatColor: '#FAD02C' },
     ],
     builtAtMs: NOW,
+    chrome: elChrome,
   };
 
-  it('returns the first future entry as live', () => {
+  it('returns the first future entry as live, carrying the snapshot chrome', () => {
     const s = selectNextApproach(snap, NOW);
     expect(s.kind).toBe('live');
     expect(s.kind === 'live' && s.entry.name).toBe('a');
+    expect(s.chrome).toEqual(elChrome);
   });
 
-  it('is expired when every entry is in the past', () => {
-    expect(selectNextApproach(snap, NOW + 2 * HOUR).kind).toBe('expired');
+  it('is expired when every entry is in the past, carrying the snapshot chrome', () => {
+    const s = selectNextApproach(snap, NOW + 2 * HOUR);
+    expect(s.kind).toBe('expired');
+    expect(s.chrome).toEqual(elChrome);
   });
 
-  it('is empty for null or no entries', () => {
-    expect(selectNextApproach(null, NOW).kind).toBe('empty');
-    expect(selectNextApproach({ entries: [], builtAtMs: NOW }, NOW).kind).toBe('empty');
+  it('is empty for null or no entries, falling back to DEFAULT_CHROME when there is no snapshot', () => {
+    const s1 = selectNextApproach(null, NOW);
+    expect(s1.kind).toBe('empty');
+    expect(s1.chrome).toEqual(DEFAULT_CHROME);
+
+    const s2 = selectNextApproach({ entries: [], builtAtMs: NOW, chrome: elChrome }, NOW);
+    expect(s2.kind).toBe('empty');
+    expect(s2.chrome).toEqual(elChrome);
   });
 
   it('is empty (never throws) on a malformed persisted snapshot', () => {
@@ -90,14 +139,26 @@ describe('selectNextApproach', () => {
   it('treats an approach exactly at now as live (inclusive)', () => {
     expect(selectNextApproach(snap, NOW + HOUR).kind).toBe('live');
   });
+
+  it('falls back to DEFAULT_CHROME for a live/expired pre-i18n snapshot with no chrome', () => {
+    // A Phase 4b snapshot survives the upgrade under the same key with entries
+    // but no chrome; the headless render must not crash on undefined chrome.
+    const legacy = { entries: snap.entries, builtAtMs: NOW } as unknown as WidgetSnapshot;
+    const live = selectNextApproach(legacy, NOW);
+    expect(live.kind).toBe('live');
+    expect(live.chrome).toEqual(DEFAULT_CHROME);
+    const expired = selectNextApproach(legacy, NOW + 2 * HOUR);
+    expect(expired.kind).toBe('expired');
+    expect(expired.chrome).toEqual(DEFAULT_CHROME);
+  });
 });
 
 describe('formatApproachTime', () => {
-  it('uses Today for the same local day', () => {
-    expect(formatApproachTime(new Date(2026, 6, 17, 14, 20).getTime(), NOW)).toBe('Today 14:20');
+  it('uses widget.today for the same local day', () => {
+    expect(formatApproachTime(new Date(2026, 6, 17, 14, 20).getTime(), NOW, fakeT)).toBe('widget.today 14:20');
   });
-  it('uses a weekday for another day and zero-pads', () => {
-    // 2026-07-18 is a Saturday.
-    expect(formatApproachTime(new Date(2026, 6, 18, 3, 5).getTime(), NOW)).toBe('Sat 03:05');
+  it('uses the matching weekday key for another day and zero-pads', () => {
+    // 2026-07-18 is a Saturday (day 6).
+    expect(formatApproachTime(new Date(2026, 6, 18, 3, 5).getTime(), NOW, fakeT)).toBe('widget.wd6 03:05');
   });
 });

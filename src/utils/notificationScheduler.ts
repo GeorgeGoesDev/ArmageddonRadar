@@ -5,6 +5,8 @@ import { Settings } from '../settings/settingsModel';
 import { ThreatThresholds } from './threat';
 import { isExpoGo } from './notifications';
 import { planDailyDigests, planSmartAlerts } from './notificationPlan';
+import type { TFunc } from '../i18n/LocaleContext';
+import type { Locale } from '../i18n/i18n';
 
 const SCHEDULED_KEY = 'scheduledAuto:v1';
 
@@ -13,16 +15,16 @@ function getNotifications() {
   return require('expo-notifications') as typeof import('expo-notifications');
 }
 
-async function ensureAutoChannels(): Promise<void> {
+async function ensureAutoChannels(t: TFunc): Promise<void> {
   if (Platform.OS !== 'android') return;
   const N = getNotifications();
   await N.setNotificationChannelAsync('daily-digest', {
-    name: 'Daily Digest',
+    name: t('notify.channelDigest'),
     importance: N.AndroidImportance.DEFAULT,
     lightColor: '#66FCF1',
   });
   await N.setNotificationChannelAsync('smart-alerts', {
-    name: 'Smart Alerts',
+    name: t('notify.channelAlerts'),
     importance: N.AndroidImportance.HIGH,
     lightColor: '#FF4500',
   });
@@ -38,6 +40,8 @@ export async function syncAutoNotifications(
   week: NeoWeek,
   settings: Settings,
   thresholds: ThreatThresholds,
+  t: TFunc,
+  locale: Locale,
   now: number = Date.now(),
 ): Promise<void> {
   if (isExpoGo) return;
@@ -50,7 +54,7 @@ export async function syncAutoNotifications(
     });
     if (!req.granted) return;
   }
-  await ensureAutoChannels();
+  await ensureAutoChannels(t);
 
   // Cancel the previous auto set.
   try {
@@ -62,9 +66,9 @@ export async function syncAutoNotifications(
   }
 
   const digests = settings.dailyDigestEnabled
-    ? planDailyDigests(week, settings.digestHour, thresholds, now)
+    ? planDailyDigests(week, settings.digestHour, thresholds, now, t, locale)
     : [];
-  const alerts = settings.smartAlertsEnabled ? planSmartAlerts(week, settings.dangerLD, now) : [];
+  const alerts = settings.smartAlertsEnabled ? planSmartAlerts(week, settings.dangerLD, now, t, locale) : [];
 
   const newIds: string[] = [];
   for (const d of digests) {

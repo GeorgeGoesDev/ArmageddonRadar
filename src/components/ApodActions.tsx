@@ -7,15 +7,16 @@ import { saveApodToGallery, setApodAsWallpaper } from '../utils/apodImage';
 import { WallpaperTarget } from '../../modules/apod-wallpaper';
 import { hapticSuccess } from '../utils/haptics';
 import { useSettings } from '../settings/SettingsContext';
+import { useTranslation } from '../i18n/LocaleContext';
 
 type Job = 'save' | 'wallpaper';
 
 const DONE_DISPLAY_MS = 1500;
 
-const WALLPAPER_TARGETS: { target: WallpaperTarget; label: string }[] = [
-  { target: 'home', label: 'Home' },
-  { target: 'lock', label: 'Lock' },
-  { target: 'both', label: 'Both' },
+const WALLPAPER_TARGETS: { target: WallpaperTarget; labelKey: string }[] = [
+  { target: 'home', labelKey: 'apod.wallpaperHome' },
+  { target: 'lock', labelKey: 'apod.wallpaperLock' },
+  { target: 'both', labelKey: 'apod.wallpaperBoth' },
 ];
 
 function ActionButton({
@@ -72,6 +73,7 @@ function ChoiceChip({ label, disabled, onPress }: { label: string; disabled: boo
 
 export function ApodActions({ apod }: { apod: Apod }) {
   const { settings } = useSettings();
+  const { t } = useTranslation();
   const [busy, setBusy] = useState<Job | null>(null);
   const [done, setDone] = useState<Job | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -100,7 +102,7 @@ export function ApodActions({ apod }: { apod: Apod }) {
     } catch (e) {
       // Surface the reason: an HD APOD is several MB and a denied permission or a
       // dropped connection must never look like a dead button.
-      setError(e instanceof Error ? e.message : 'Something went wrong.');
+      setError(e instanceof Error ? e.message : t('apod.genericError'));
     } finally {
       setBusy(null);
     }
@@ -108,7 +110,7 @@ export function ApodActions({ apod }: { apod: Apod }) {
 
   function pickTarget(target: WallpaperTarget) {
     setChoosing(false);
-    run('wallpaper', () => setApodAsWallpaper(apod, target));
+    run('wallpaper', () => setApodAsWallpaper(apod, target, t));
   }
 
   return (
@@ -116,19 +118,19 @@ export function ApodActions({ apod }: { apod: Apod }) {
       <View className="flex-row" style={{ gap: 10 }}>
         <ActionButton
           icon="download"
-          label="Save to gallery"
+          label={t('apod.saveToGallery')}
           busy={busy === 'save'}
           done={done === 'save'}
-          doneLabel="Saved"
+          doneLabel={t('apod.saved')}
           disabled={busy !== null}
-          onPress={() => run('save', () => saveApodToGallery(apod))}
+          onPress={() => run('save', () => saveApodToGallery(apod, t))}
         />
         <ActionButton
           icon="wallpaper"
-          label="Set as wallpaper"
+          label={t('apod.setAsWallpaper')}
           busy={busy === 'wallpaper'}
           done={done === 'wallpaper'}
-          doneLabel="Set"
+          doneLabel={t('apod.wallpaperSetDone')}
           disabled={busy !== null}
           onPress={() => {
             setError(null);
@@ -139,10 +141,10 @@ export function ApodActions({ apod }: { apod: Apod }) {
 
       {choosing && busy === null && (
         <View className="mt-2">
-          <Text className="mb-1 text-[11px]" style={{ color: colors.textMuted }}>Set wallpaper on</Text>
+          <Text className="mb-1 text-[11px]" style={{ color: colors.textMuted }}>{t('apod.setWallpaperOn')}</Text>
           <View className="flex-row" style={{ gap: 8 }}>
-            {WALLPAPER_TARGETS.map(({ target, label }) => (
-              <ChoiceChip key={target} label={label} disabled={false} onPress={() => pickTarget(target)} />
+            {WALLPAPER_TARGETS.map(({ target, labelKey }) => (
+              <ChoiceChip key={target} label={t(labelKey)} disabled={false} onPress={() => pickTarget(target)} />
             ))}
           </View>
         </View>

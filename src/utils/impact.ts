@@ -2,6 +2,7 @@ export interface ImpactResult {
   energyMt: number;
   hiroshimas: number;
   craterKm: number;
+  /** Catalog key (`impact.sev*`) — resolve with `t()` before displaying. */
   severity: string;
 }
 
@@ -11,14 +12,18 @@ const G = 9.81;
 const JOULES_PER_MT = 4.184e15;
 const HIROSHIMA_MT = 0.015;
 
-/** Torino-independent plain-language severity by energy (megatons TNT). */
+/**
+ * Torino-independent plain-language severity by energy (megatons TNT).
+ * Returns a catalog key (`impact.sev*`) — not display text — so this module
+ * stays free of `t` (pure/testable); callers resolve it via `t()` at render.
+ */
 export function severityFor(energyMt: number): string {
-  if (energyMt < 0.001) return 'Airburst — shattered windows for miles';
-  if (energyMt < 1) return 'Levels a town';
-  if (energyMt < 100) return 'Flattens a city';
-  if (energyMt < 1e4) return 'Regional devastation';
-  if (energyMt < 1e6) return 'Continental catastrophe';
-  return 'Mass-extinction event';
+  if (energyMt < 0.001) return 'impact.sevAirburst';
+  if (energyMt < 1) return 'impact.sevTown';
+  if (energyMt < 100) return 'impact.sevCity';
+  if (energyMt < 1e4) return 'impact.sevRegional';
+  if (energyMt < 1e6) return 'impact.sevContinental';
+  return 'impact.sevExtinction';
 }
 
 /**

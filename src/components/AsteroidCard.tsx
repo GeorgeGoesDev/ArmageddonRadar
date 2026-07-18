@@ -9,6 +9,7 @@ import { asteroidColor } from '../utils/asteroidColor';
 import { useWatchlist } from '../watchlist/WatchlistContext';
 import { useSettings } from '../settings/SettingsContext';
 import { hapticSuccess } from '../utils/haptics';
+import { useTranslation } from '../i18n/LocaleContext';
 
 interface AsteroidCardProps {
   asteroid: Asteroid;
@@ -53,6 +54,7 @@ function Metric({ icon, label, value, highlight }: MetricProps) {
  */
 export function AsteroidCard({ asteroid, selected, onPress, onDetails }: AsteroidCardProps) {
   const fmt = useFormatters();
+  const { t } = useTranslation();
   const { isWatched, toggle } = useWatchlist();
   const { settings } = useSettings();
   const watched = isWatched(asteroid.id);
@@ -60,6 +62,8 @@ export function AsteroidCard({ asteroid, selected, onPress, onDetails }: Asteroi
     if (!watched) hapticSuccess(settings.hapticsEnabled);
     toggle(asteroid.id);
   };
+  const approachDate = new Date(asteroid.approachEpochMs);
+  const approachLabel = `${String(approachDate.getDate()).padStart(2, '0')} ${t('dates.mon' + approachDate.getMonth())}`;
   return (
     <Pressable
       onPress={onPress}
@@ -98,7 +102,7 @@ export function AsteroidCard({ asteroid, selected, onPress, onDetails }: Asteroi
           <Pressable onPress={onDetails} hitSlop={10} className="flex-row items-center">
             {asteroid.hazardous && (
               <View className="px-2 py-0.5 rounded-full mr-2" style={{ backgroundColor: 'rgba(255,69,0,0.15)' }}>
-                <Text className="text-[10px] font-bold" style={{ color: colors.threatOrange }}>HAZARDOUS</Text>
+                <Text className="text-[10px] font-bold" style={{ color: colors.threatOrange }}>{t('card.hazardous')}</Text>
               </View>
             )}
             <MaterialCommunityIcons name="chevron-right" size={22} color={colors.accentBlue} />
@@ -108,18 +112,18 @@ export function AsteroidCard({ asteroid, selected, onPress, onDetails }: Asteroi
 
       {/* Metrics */}
       <View className="flex-row">
-        <Metric icon="speedometer" label="Velocity" value={fmt.velocity(asteroid.velocityKph)} highlight={selected} />
-        <Metric icon="arrow-expand-horizontal" label="Diameter" value={fmt.diameterRange(asteroid.diameterMinM, asteroid.diameterMaxM)} highlight={selected} />
+        <Metric icon="speedometer" label={t('card.velocity')} value={fmt.velocity(asteroid.velocityKph)} highlight={selected} />
+        <Metric icon="arrow-expand-horizontal" label={t('card.diameter')} value={fmt.diameterRange(asteroid.diameterMinM, asteroid.diameterMaxM)} highlight={selected} />
       </View>
       <View className="flex-row mt-3">
-        <Metric icon="moon-waning-crescent" label="Miss" value={fmt.distanceFromLunar(asteroid.missLunar, asteroid.missKm, asteroid.missMiles)} highlight={selected} />
-        <Metric icon="earth" label="Approach" value={new Date(asteroid.approachEpochMs).toLocaleDateString([], { day: '2-digit', month: 'short' })} highlight={selected} />
+        <Metric icon="moon-waning-crescent" label={t('card.miss')} value={fmt.distanceFromLunar(asteroid.missLunar, asteroid.missKm, asteroid.missMiles)} highlight={selected} />
+        <Metric icon="earth" label={t('card.approach')} value={approachLabel} highlight={selected} />
       </View>
 
       {/* Fun size comparison */}
       <View className="mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: colors.gridLineFaint }}>
         <Text className="text-xs" style={{ color: colors.accentBlue }}>
-          {describeDiameter(asteroid.diameterAvgM)}
+          {describeDiameter(asteroid.diameterAvgM, t)}
         </Text>
       </View>
     </Pressable>

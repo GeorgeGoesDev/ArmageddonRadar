@@ -2,16 +2,22 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { Asset, requestPermissionsAsync } from 'expo-media-library';
 import { Apod } from '../types/apod';
 import { setWallpaper, WallpaperTarget } from '../../modules/apod-wallpaper';
+import { TFunc } from '../i18n/LocaleContext';
 
-function imageUrlFor(apod: Apod): string {
+// The (English, module-layer) message `setWallpaper` throws when the native
+// module isn't present (e.g. Expo Go). Matched here so the boundary can
+// re-throw a localized message without modifying the module itself.
+const WALLPAPER_NEEDS_BUILD_MESSAGE = 'Setting wallpaper needs a full app build.';
+
+function imageUrlFor(apod: Apod, t: TFunc): string {
   const url = apod.hdImageUrl || apod.imageUrl;
-  if (!url) throw new Error('This picture has no downloadable image.');
+  if (!url) throw new Error(t('apod.noDownloadableImage'));
   return url;
 }
 
 /** Downloads the HD image (falling back to the standard one) into the cache directory. */
-export async function downloadApodImage(apod: Apod): Promise<File> {
-  const url = imageUrlFor(apod);
+export async function downloadApodImage(apod: Apod, t: TFunc): Promise<File> {
+  const url = imageUrlFor(apod, t);
   const dir = new Directory(Paths.cache, 'apod');
   try {
     // `Directory.create()` is synchronous and can throw (e.g. if the cache
@@ -21,26 +27,26 @@ export async function downloadApodImage(apod: Apod): Promise<File> {
     // file instead of rejecting with `DestinationAlreadyExists`.
     return await File.downloadFileAsync(url, dir, { idempotent: true });
   } catch {
-    throw new Error('Could not download the image. Check your connection.');
+    throw new Error(t('apod.downloadError'));
   }
 }
 
 /** Saves the APOD image into the device gallery. */
-export async function saveApodToGallery(apod: Apod): Promise<void> {
-  const file = await downloadApodImage(apod);
+export async function saveApodToGallery(apod: Apod, t: TFunc): Promise<void> {
+  const file = await downloadApodImage(apod, t);
   // requestPermissionsAsync(writeOnly?, granularPermissions?) takes positional
   // arguments in this SDK, not an options object.
   let perm;
   try {
     perm = await requestPermissionsAsync(false, ['photo']);
   } catch {
-    throw new Error('Could not save the image to your gallery.');
+    throw new Error(t('apod.saveError'));
   }
-  if (!perm.granted) throw new Error('Gallery permission denied.');
+  if (!perm.granted) throw new Error(t('apod.permissionDenied'));
   try {
     await Asset.create(file.uri);
   } catch {
-    throw new Error('Could not save the image to your gallery.');
+    throw new Error(t('apod.saveError'));
   }
 }
 
@@ -52,13 +58,17 @@ export async function saveApodToGallery(apod: Apod): Promise<void> {
  * our granted content URI across processes and fails with "could not load data",
  * so we read the file and set it ourselves. Applied without a crop step.
  */
-export async function setApodAsWallpaper(apod: Apod, target: WallpaperTarget): Promise<void> {
-  const file = await downloadApodImage(apod);
+export async function setApodAsWallpaper(apod: Apod, target: WallpaperTarget, t: TFunc): Promise<void> {
+  const file = await downloadApodImage(apod, t);
   try {
     await setWallpaper(file.uri, target);
   } catch (e) {
-    // Keep any raw native message off the UI; setWallpaper already throws
-    // user-safe Errors, but guard the unexpected case too.
-    throw new Error(e instanceof Error ? e.message : 'Could not set the wallpaper.');
+    // Keep any raw native/module message off the UI — including the module's
+    // own (English) "needs a full app build" text — and surface a localized
+    // one instead.
+    if (e instanceof Error && e.message === WALLPAPER_NEEDS_BUILD_MESSAGE) {
+      throw new Error(t('apod.wallpaperNeedsBuild'));
+    }
+    throw new Error(t('apod.wallpaperError'));
   }
 }

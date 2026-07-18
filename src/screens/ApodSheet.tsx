@@ -6,8 +6,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { Apod } from '../types/apod';
 import { ApodActions } from '../components/ApodActions';
+import { useTranslation } from '../i18n/LocaleContext';
 
 export function ApodSheet({ apod, visible, onClose }: { apod: Apod | null; visible: boolean; onClose: () => void }) {
+  const { t } = useTranslation();
   if (!apod) return null;
   // Fabric only gives a ScrollView a real scroll range when its parent has a
   // DEFINITE height. `maxHeight` is just a cap (the box stays content-sized), so
@@ -19,7 +21,7 @@ export function ApodSheet({ apod, visible, onClose }: { apod: Apod | null; visib
       <View className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
         <View className="rounded-t-3xl overflow-hidden" style={{ backgroundColor: colors.spaceBlack, borderTopWidth: 1, borderColor: colors.cardBorder, height: '92%' }}>
           <View className="flex-row items-center justify-between px-5 pt-4 pb-2">
-            <Text className="text-xs uppercase tracking-widest flex-1" style={{ color: colors.accentBlue }}>Astronomy Picture · {apod.date}</Text>
+            <Text className="text-xs uppercase tracking-widest flex-1" style={{ color: colors.accentBlue }}>{t('apod.pictureLabel', { date: apod.date })}</Text>
             <Pressable onPress={onClose} hitSlop={12}><MaterialCommunityIcons name="close-circle" size={26} color={colors.textMuted} /></Pressable>
           </View>
           <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
@@ -29,7 +31,7 @@ export function ApodSheet({ apod, visible, onClose }: { apod: Apod | null; visib
             ) : (
               <Pressable onPress={() => Linking.openURL(apod.siteUrl)} className="items-center justify-center" style={{ height: 160, backgroundColor: colors.charcoal }}>
                 <MaterialCommunityIcons name="play-circle" size={48} color={colors.accentBlue} />
-                <Text className="mt-2 text-xs" style={{ color: colors.accentBlue }}>Open today's video</Text>
+                <Text className="mt-2 text-xs" style={{ color: colors.accentBlue }}>{t('apod.openVideo')}</Text>
               </Pressable>
             )}
             <View className="px-5">

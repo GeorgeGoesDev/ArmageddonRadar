@@ -2,6 +2,9 @@ import { Platform } from 'react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Asteroid } from '../types/neo';
 import { formatLocalTime } from './dates';
+import type { TFunc } from '../i18n/LocaleContext';
+import type { Locale } from '../i18n/i18n';
+import { formatNumber } from '../i18n/format';
 
 /**
  * Notification engine for "Set Telescope Reminder".
@@ -10,16 +13,12 @@ import { formatLocalTime } from './dates';
  * moment its native module initialises inside Expo Go. So we:
  *   1. detect Expo Go via `expo-constants`, and
  *   2. only ever `require('expo-notifications')` when NOT in Expo Go.
- * In Expo Go the reminder gracefully no-ops with a helpful message; in a
- * development or production build it schedules a real local notification.
+ * In Expo Go the reminder gracefully no-ops; outside Expo Go it schedules a
+ * real local notification.
  */
 
 export const isExpoGo =
   Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-
-const DEV_BUILD_HINT =
-  'Reminders need a development build — Expo Go removed notifications in SDK 53. ' +
-  'Run `npx expo run:android` to enable them.';
 
 // Lazy require so the module never initialises inside Expo Go.
 function getNotifications() {
@@ -40,20 +39,20 @@ export function configureNotifications(): void {
   });
 }
 
-async function ensureAndroidChannel(): Promise<void> {
+async function ensureAndroidChannel(t: TFunc): Promise<void> {
   if (Platform.OS !== 'android') return;
   const Notifications = getNotifications();
   await Notifications.setNotificationChannelAsync('telescope-reminders', {
-    name: 'Telescope Reminders',
+    name: t('notify.channelReminders'),
     importance: Notifications.AndroidImportance.HIGH,
     lightColor: '#66FCF1',
   });
 }
 
 /** Requests permission, returning true when granted. */
-export async function requestNotificationPermissions(): Promise<boolean> {
+export async function requestNotificationPermissions(t: TFunc): Promise<boolean> {
   const Notifications = getNotifications();
-  await ensureAndroidChannel();
+  await ensureAndroidChannel(t);
   const settings = await Notifications.getPermissionsAsync();
   if (settings.granted) return true;
 
@@ -78,28 +77,34 @@ export interface ScheduledReminder {
  */
 export async function scheduleApproachReminder(
   asteroid: Asteroid,
+  t: TFunc,
+  locale: Locale,
 ): Promise<ScheduledReminder> {
   if (isExpoGo) {
-    throw new Error(DEV_BUILD_HINT);
+    // No-op: the native module isn't available here. Reject with a non-Error
+    // so callers fall back to their own generic, already-localized failure
+    // copy instead of us surfacing raw English from this non-React layer.
+    return Promise.reject();
   }
 
   const Notifications = getNotifications();
-  const granted = await requestNotificationPermissions();
+  const granted = await requestNotificationPermissions(t);
   if (!granted) {
-    throw new Error('Notification permission was not granted.');
+    throw new Error(t('notify.permissionDenied'));
   }
 
   const now = Date.now();
   const approach = asteroid.approachEpochMs;
   const adjusted = !approach || approach <= now + 5_000;
   const fireDate = adjusted ? new Date(now + 10_000) : new Date(approach);
+  const distance = `${formatNumber(asteroid.missLunar, locale, 1)} LD`;
 
   const id = await Notifications.scheduleNotificationAsync({
     content: {
-      title: `🔭 ${asteroid.displayName} at closest approach`,
+      title: t('notify.reminderTitle', { name: asteroid.displayName }),
       body: adjusted
-        ? `Demo reminder — ${asteroid.displayName} passes ${asteroid.missLunar.toFixed(1)} lunar distances away.`
-        : `Point your telescope up! Closest approach ~${formatLocalTime(approach)}, ${asteroid.missLunar.toFixed(1)} LD away.`,
+        ? t('notify.reminderBodyDemo', { name: asteroid.displayName, distance })
+        : t('notify.reminderBody', { time: formatLocalTime(approach), distance }),
       data: { asteroidId: asteroid.id },
     },
     trigger: {

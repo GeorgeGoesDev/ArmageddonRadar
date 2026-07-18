@@ -6,8 +6,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { useApod } from '../hooks/useApod';
 import { ApodSheet } from '../screens/ApodSheet';
+import { useTranslation } from '../i18n/LocaleContext';
 
 export function ApodBanner() {
+  const { t } = useTranslation();
   const { data } = useApod();
   const [open, setOpen] = useState(false);
   if (!data) return null; // loading/error → render nothing (no layout jump)
@@ -20,11 +22,11 @@ export function ApodBanner() {
         ) : (
           <View className="flex-1 items-center justify-center">
             <MaterialCommunityIcons name="play-circle" size={32} color={colors.accentBlue} />
-            <Text className="mt-1 text-[11px]" style={{ color: colors.accentBlue }}>Today's APOD is a video</Text>
+            <Text className="mt-1 text-[11px]" style={{ color: colors.accentBlue }}>{t('dashboard.apodVideoLabel')}</Text>
           </View>
         )}
         <LinearGradient colors={['transparent', 'rgba(11,12,16,0.9)']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 12, paddingVertical: 8 }}>
-          <Text className="text-[10px] uppercase tracking-widest" style={{ color: colors.accentBlue }}>Astronomy Picture of the Day</Text>
+          <Text className="text-[10px] uppercase tracking-widest" style={{ color: colors.accentBlue }}>{t('dashboard.apodLabel')}</Text>
           <Text className="text-sm font-bold" style={{ color: colors.textPrimary }} numberOfLines={1}>{data.title}</Text>
         </LinearGradient>
       </Pressable>

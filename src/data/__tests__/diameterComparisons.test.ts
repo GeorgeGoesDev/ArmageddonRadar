@@ -1,4 +1,15 @@
 import { bestFitLandmark, describeDiameter } from '../diameterComparisons';
+import { en } from '../../i18n/en';
+
+/** Minimal fake `t` that resolves dotted keys against the real English catalog
+ * and inlines `%{param}` interpolation, so these tests exercise real key
+ * lookups without depending on i18n-js. */
+function fakeT(key: string, params?: Record<string, unknown>): string {
+  const value = key.split('.').reduce<unknown>((obj, part) => (obj as Record<string, unknown>)?.[part], en);
+  if (typeof value !== 'string') return key;
+  if (!params) return value;
+  return value.replace(/%\{(\w+)\}/g, (_, name) => String(params[name] ?? ''));
+}
 
 describe('bestFitLandmark', () => {
   it('returns null for non-positive input', () => {
@@ -19,10 +30,10 @@ describe('bestFitLandmark', () => {
 
 describe('describeDiameter (regression)', () => {
   it('still returns an "About N ..." string with the landmark emoji', () => {
-    const s = describeDiameter(30);
+    const s = describeDiameter(30, fakeT);
     expect(s).toMatch(/^About /);
   });
   it('handles pebble/too-small edges', () => {
-    expect(describeDiameter(0)).toContain('pebble');
+    expect(describeDiameter(0, fakeT)).toContain('pebble');
   });
 });

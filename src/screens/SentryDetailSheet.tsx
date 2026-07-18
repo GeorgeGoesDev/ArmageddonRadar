@@ -8,6 +8,8 @@ import { useSentryDetail } from '../hooks/useSentryDetail';
 import { TorinoChip } from '../components/TorinoChip';
 import { formatOdds } from '../utils/torino';
 import { formatInt } from '../utils/units';
+import { formatNumber } from '../i18n/format';
+import { useTranslation } from '../i18n/LocaleContext';
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -18,13 +20,14 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-const TORINO_CAPTION: Record<number, string> = {
-  0: 'No unusual level of danger.',
-  1: 'Routine — a pass near Earth, no cause for concern.',
+const TORINO_CAPTION_KEY: Record<number, string> = {
+  0: 'sentry.noUnusualDanger',
+  1: 'sentry.routineCaption',
 };
 
 export function SentryDetailSheet({ risk, onClose }: { risk: SentryRisk | null; onClose: () => void }) {
   const { data, isLoading, isError } = useSentryDetail(risk?.designation ?? null);
+  const { locale, t } = useTranslation();
   if (!risk) return null;
 
   return (
@@ -41,24 +44,24 @@ export function SentryDetailSheet({ risk, onClose }: { risk: SentryRisk | null; 
           <ScrollView className="px-5" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
             <View className="flex-row items-center mb-2" style={{ gap: 8 }}>
               <TorinoChip level={risk.torinoMax} />
-              <Text className="text-xs" style={{ color: colors.textMuted }}>{TORINO_CAPTION[risk.torinoMax] ?? 'Elevated — merits attention by astronomers.'}</Text>
+              <Text className="text-xs" style={{ color: colors.textMuted }}>{t(TORINO_CAPTION_KEY[risk.torinoMax] ?? 'sentry.elevatedCaption')}</Text>
             </View>
 
-            <Row label="Impact probability" value={`${formatOdds(risk.impactProb)} (${(risk.impactProb * 100).toExponential(1)}%)`} />
-            <Row label="Potential impacts" value={`${risk.nImpacts} between ${risk.yearRange}`} />
-            <Row label="Estimated diameter" value={`${formatInt(risk.estDiameterM)} m`} />
-            <Row label="Palermo (cumulative)" value={risk.palermoCum.toFixed(2)} />
+            <Row label={t('sentry.impactProbability')} value={`${formatOdds(risk.impactProb)} (${(risk.impactProb * 100).toExponential(1)}%)`} />
+            <Row label={t('sentry.potentialImpacts')} value={t('sentry.potentialImpactsValue', { count: risk.nImpacts, range: risk.yearRange })} />
+            <Row label={t('sentry.estimatedDiameter')} value={`${formatInt(risk.estDiameterM, locale)} m`} />
+            <Row label={t('sentry.palermoCumulative')} value={formatNumber(risk.palermoCum, locale, 2)} />
 
             {isLoading && <View className="py-6 items-center"><ActivityIndicator color={colors.accentBlue} /></View>}
-            {isError && <Text className="py-6 text-center text-xs" style={{ color: colors.textMuted }}>Extended risk data unavailable.</Text>}
+            {isError && <Text className="py-6 text-center text-xs" style={{ color: colors.textMuted }}>{t('sentry.extendedRiskUnavailable')}</Text>}
             {data && (
               <>
-                <Row label="Palermo (max)" value={data.palermoMax.toFixed(2)} />
-                <Row label="Impact energy" value={`${formatInt(data.energyMt)} MT TNT`} />
-                <Row label="Mass" value={`${data.massKg.toExponential(2)} kg`} />
-                <Row label="Velocity (v∞)" value={`${data.vInfKps.toFixed(1)} km/s`} />
-                <Row label="First observed" value={data.firstObs} />
-                <Row label="Last observed" value={data.lastObs} />
+                <Row label={t('sentry.palermoMax')} value={formatNumber(data.palermoMax, locale, 2)} />
+                <Row label={t('sentry.impactEnergy')} value={`${formatInt(data.energyMt, locale)} MT TNT`} />
+                <Row label={t('sentry.mass')} value={`${data.massKg.toExponential(2)} kg`} />
+                <Row label={t('sentry.velocityInf')} value={`${formatNumber(data.vInfKps, locale, 1)} km/s`} />
+                <Row label={t('sentry.firstObserved')} value={data.firstObs} />
+                <Row label={t('sentry.lastObserved')} value={data.lastObs} />
               </>
             )}
           </ScrollView>

@@ -9,10 +9,12 @@ import { ImpactReport } from '../components/ImpactReport';
 import { colors } from '../theme/colors';
 import { useSettings } from '../settings/SettingsContext';
 import { hapticSuccess } from '../utils/haptics';
+import { useTranslation } from '../i18n/LocaleContext';
 
 export function ImpactReportSheet({ asteroid, visible, onClose }: { asteroid: Asteroid | null; visible: boolean; onClose: () => void }) {
   const { width } = useWindowDimensions();
   const { settings } = useSettings();
+  const { t } = useTranslation();
   const shotRef = useRef<View>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,13 +25,13 @@ export function ImpactReportSheet({ asteroid, visible, onClose }: { asteroid: As
     try {
       const uri = await captureRef(shotRef, { format: 'png', quality: 1 });
       if (!(await Sharing.isAvailableAsync())) {
-        setError('Sharing is not available on this device.');
+        setError(t('impact.sharingUnavailable'));
         return;
       }
       await Sharing.shareAsync(uri);
       hapticSuccess(settings.hapticsEnabled);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not create the image.');
+      setError(e instanceof Error ? e.message : t('impact.couldNotCreateImage'));
     }
   };
 
@@ -51,7 +53,7 @@ export function ImpactReportSheet({ asteroid, visible, onClose }: { asteroid: As
             {error && <Text className="mt-2 text-xs" style={{ color: colors.threatOrange }}>{error}</Text>}
             <Pressable onPress={share} className="mt-4 rounded-2xl px-6 py-3 flex-row items-center" style={{ backgroundColor: colors.accentBlue }}>
               <MaterialCommunityIcons name="share-variant" size={18} color={colors.spaceBlack} />
-              <Text className="ml-2 font-bold" style={{ color: colors.spaceBlack }}>Share image</Text>
+              <Text className="ml-2 font-bold" style={{ color: colors.spaceBlack }}>{t('impact.shareImage')}</Text>
             </Pressable>
           </ScrollView>
           </SafeAreaView>
