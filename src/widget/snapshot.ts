@@ -14,17 +14,37 @@ export interface WidgetEntry {
   threatColor: string;
 }
 
+export interface WidgetChrome {
+  nextApproach: string;
+  radar: string;
+  expired: string;
+  tapRefresh: string;
+  tapStart: string;
+}
+
 export interface WidgetSnapshot {
   entries: WidgetEntry[];
   builtAtMs: number;
+  chrome: WidgetChrome;
 }
 
 export type WidgetState =
-  | { kind: 'live'; entry: WidgetEntry }
-  | { kind: 'expired' }
-  | { kind: 'empty' };
+  | { kind: 'live'; entry: WidgetEntry; chrome: WidgetChrome }
+  | { kind: 'expired'; chrome: WidgetChrome }
+  | { kind: 'empty'; chrome: WidgetChrome };
 
 const MAX_ENTRIES = 10;
+
+// English fallback chrome for the empty state when NO snapshot exists yet (a
+// fresh install / widget-added-before-first-open — the headless task has no
+// locale then, so it can't call `t`).
+const DEFAULT_CHROME: WidgetChrome = {
+  nextApproach: 'NEXT APPROACH',
+  radar: 'RADAR',
+  expired: 'Radar data expired',
+  tapRefresh: 'Tap to refresh',
+  tapStart: 'Tap to start tracking',
+};
 
 const pad2 = (n: number): string => String(n).padStart(2, '0');
 
@@ -68,7 +88,14 @@ export function buildWidgetSnapshot(
         threatColor: threat.color,
       };
     });
-  return { entries, builtAtMs: now };
+  const chrome: WidgetChrome = {
+    nextApproach: t('widget.nextApproach'),
+    radar: t('widget.radar'),
+    expired: t('widget.expired'),
+    tapRefresh: t('widget.tapRefresh'),
+    tapStart: t('widget.tapStart'),
+  };
+  return { entries, builtAtMs: now, chrome };
 }
 
 /** Total: always returns a state, never throws — even on a malformed snapshot. */
@@ -77,8 +104,8 @@ export function selectNextApproach(snapshot: WidgetSnapshot | null, now: number)
   // partial write or a reused key could deserialize to something without a valid
   // entries array. The headless handler relies on this never throwing.
   if (!snapshot || !Array.isArray(snapshot.entries) || snapshot.entries.length === 0) {
-    return { kind: 'empty' };
+    return { kind: 'empty', chrome: snapshot?.chrome ?? DEFAULT_CHROME };
   }
   const next = snapshot.entries.find((e) => e.approachEpochMs >= now);
-  return next ? { kind: 'live', entry: next } : { kind: 'expired' };
+  return next ? { kind: 'live', entry: next, chrome: snapshot.chrome } : { kind: 'expired', chrome: snapshot.chrome };
 }

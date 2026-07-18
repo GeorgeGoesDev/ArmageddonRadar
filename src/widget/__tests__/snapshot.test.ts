@@ -3,6 +3,7 @@ import {
   selectNextApproach,
   formatApproachTime,
   WidgetSnapshot,
+  WidgetChrome,
 } from '../snapshot';
 import type { NeoWeek } from '../../api/nasa';
 import type { Asteroid } from '../../types/neo';
@@ -59,7 +60,34 @@ describe('buildWidgetSnapshot', () => {
     const snap = buildWidgetSnapshot({ '2026-07-17': [ast('far', 1234.5, NOW + HOUR)] }, thresholds, NOW, fakeT, 'el');
     expect(snap.entries[0].distance).toBe('1.234,5 LD');
   });
+
+  it('builds chrome from the catalog via `t`', () => {
+    const snap = buildWidgetSnapshot({ '2026-07-17': [ast('soon', 3.4, NOW + HOUR)] }, thresholds, NOW, fakeT, 'en');
+    expect(snap.chrome).toEqual({
+      nextApproach: 'widget.nextApproach',
+      radar: 'widget.radar',
+      expired: 'widget.expired',
+      tapRefresh: 'widget.tapRefresh',
+      tapStart: 'widget.tapStart',
+    });
+  });
 });
+
+const elChrome: WidgetChrome = {
+  nextApproach: 'ΕΠΟΜΕΝΗ ΠΡΟΣΕΓΓΙΣΗ',
+  radar: 'ΡΑΝΤΑΡ',
+  expired: 'Τα δεδομένα ραντάρ έληξαν',
+  tapRefresh: 'Πάτησε για ανανέωση',
+  tapStart: 'Πάτησε για να ξεκινήσεις παρακολούθηση',
+};
+
+const DEFAULT_CHROME: WidgetChrome = {
+  nextApproach: 'NEXT APPROACH',
+  radar: 'RADAR',
+  expired: 'Radar data expired',
+  tapRefresh: 'Tap to refresh',
+  tapStart: 'Tap to start tracking',
+};
 
 describe('selectNextApproach', () => {
   const snap: WidgetSnapshot = {
@@ -67,21 +95,30 @@ describe('selectNextApproach', () => {
       { name: 'a', distance: '2.0 LD', approachEpochMs: NOW + HOUR, absoluteTime: 'Today 13:00', threatLabel: 'CAUTION', threatColor: '#FAD02C' },
     ],
     builtAtMs: NOW,
+    chrome: elChrome,
   };
 
-  it('returns the first future entry as live', () => {
+  it('returns the first future entry as live, carrying the snapshot chrome', () => {
     const s = selectNextApproach(snap, NOW);
     expect(s.kind).toBe('live');
     expect(s.kind === 'live' && s.entry.name).toBe('a');
+    expect(s.chrome).toEqual(elChrome);
   });
 
-  it('is expired when every entry is in the past', () => {
-    expect(selectNextApproach(snap, NOW + 2 * HOUR).kind).toBe('expired');
+  it('is expired when every entry is in the past, carrying the snapshot chrome', () => {
+    const s = selectNextApproach(snap, NOW + 2 * HOUR);
+    expect(s.kind).toBe('expired');
+    expect(s.chrome).toEqual(elChrome);
   });
 
-  it('is empty for null or no entries', () => {
-    expect(selectNextApproach(null, NOW).kind).toBe('empty');
-    expect(selectNextApproach({ entries: [], builtAtMs: NOW }, NOW).kind).toBe('empty');
+  it('is empty for null or no entries, falling back to DEFAULT_CHROME when there is no snapshot', () => {
+    const s1 = selectNextApproach(null, NOW);
+    expect(s1.kind).toBe('empty');
+    expect(s1.chrome).toEqual(DEFAULT_CHROME);
+
+    const s2 = selectNextApproach({ entries: [], builtAtMs: NOW, chrome: elChrome }, NOW);
+    expect(s2.kind).toBe('empty');
+    expect(s2.chrome).toEqual(elChrome);
   });
 
   it('is empty (never throws) on a malformed persisted snapshot', () => {

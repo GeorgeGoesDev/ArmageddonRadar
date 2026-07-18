@@ -37,8 +37,8 @@ export function NextApproachWidget({ state }: { state: WidgetState }) {
   if (state.kind === 'empty') {
     return (
       <Frame>
-        <Header text="☄ RADAR" />
-        <TextWidget text="Tap to start tracking" style={{ fontSize: 15, color: colors.textMuted }} />
+        <Header text={`☄ ${state.chrome.radar}`} />
+        <TextWidget text={state.chrome.tapStart} style={{ fontSize: 15, color: colors.textMuted }} />
         <TextWidget text=" " style={{ fontSize: 11, color: colors.textMuted }} />
       </Frame>
     );
@@ -46,9 +46,9 @@ export function NextApproachWidget({ state }: { state: WidgetState }) {
   if (state.kind === 'expired') {
     return (
       <Frame>
-        <Header text="☄ RADAR" />
-        <TextWidget text="Radar data expired" style={{ fontSize: 15, color: colors.textMuted }} />
-        <TextWidget text="Tap to refresh" style={{ fontSize: 11, color: colors.textMuted }} />
+        <Header text={`☄ ${state.chrome.radar}`} />
+        <TextWidget text={state.chrome.expired} style={{ fontSize: 15, color: colors.textMuted }} />
+        <TextWidget text={state.chrome.tapRefresh} style={{ fontSize: 11, color: colors.textMuted }} />
       </Frame>
     );
   }
@@ -56,7 +56,7 @@ export function NextApproachWidget({ state }: { state: WidgetState }) {
   const { entry } = state;
   return (
     <Frame>
-      <Header text="☄ NEXT APPROACH" />
+      <Header text={`☄ ${state.chrome.nextApproach}`} />
       <TextWidget text={entry.name} style={{ fontSize: 20, color: colors.textPrimary, fontWeight: '700' }} />
       <TextWidget
         text={`${entry.distance}  ·  ${entry.absoluteTime}`}

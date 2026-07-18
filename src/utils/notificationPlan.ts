@@ -69,7 +69,13 @@ export function planDailyDigests(
  * `dangerLD`; de-duped by id keeping the earliest qualifying approach, sorted
  * ascending by fire time.
  */
-export function planSmartAlerts(week: NeoWeek, dangerLD: number, now: number, t: TFunc): AlertPlan[] {
+export function planSmartAlerts(
+  week: NeoWeek,
+  dangerLD: number,
+  now: number,
+  t: TFunc,
+  locale: Locale,
+): AlertPlan[] {
   const byId = new Map<string, Asteroid>();
   for (const list of Object.values(week)) {
     for (const a of list) {
@@ -85,6 +91,6 @@ export function planSmartAlerts(week: NeoWeek, dangerLD: number, now: number, t:
       fireDate: new Date(a.approachEpochMs),
       asteroidId: a.id,
       title: t('notify.alertTitle'),
-      body: t('notify.alertBody', { name: a.displayName, distance: `${a.missLunar.toFixed(1)} LD` }),
+      body: t('notify.alertBody', { name: a.displayName, distance: `${formatNumber(a.missLunar, locale, 1)} LD` }),
     }));
 }

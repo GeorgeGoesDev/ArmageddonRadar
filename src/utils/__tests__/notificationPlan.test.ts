@@ -94,7 +94,7 @@ describe('planSmartAlerts', () => {
       d1: [mkAst({ id: 'a', displayName: 'Alpha', missLunar: 0.5, approachEpochMs: now + 30_000 }), mkAst({ id: 'b', missLunar: 2, approachEpochMs: now + 20_000 })],
       d2: [mkAst({ id: 'a', displayName: 'Alpha', missLunar: 0.7, approachEpochMs: now + 10_000 }), mkAst({ id: 'c', missLunar: 0.8, approachEpochMs: now - 5_000 })],
     };
-    const alerts = planSmartAlerts(week, 1, now, fakeT);
+    const alerts = planSmartAlerts(week, 1, now, fakeT, 'en');
     expect(alerts.map((x) => x.asteroidId)).toEqual(['a']); // b too far, c in the past
     expect(alerts[0].fireDate.getTime()).toBe(now + 10_000); // earliest of a's two approaches
     expect(alerts[0].title.codePointAt(0)).toBe(0x2604); // ☄️ guard
@@ -104,31 +104,38 @@ describe('planSmartAlerts', () => {
     const week: NeoWeek = {
       d1: [mkAst({ id: 'x', missLunar: 0.9, approachEpochMs: now + 50_000 }), mkAst({ id: 'y', missLunar: 0.2, approachEpochMs: now + 10_000 })],
     };
-    expect(planSmartAlerts(week, 1, now, fakeT).map((a) => a.asteroidId)).toEqual(['y', 'x']);
+    expect(planSmartAlerts(week, 1, now, fakeT, 'en').map((a) => a.asteroidId)).toEqual(['y', 'x']);
   });
   it('returns [] when nothing qualifies', () => {
     const week: NeoWeek = { d1: [mkAst({ id: 'z', missLunar: 9, approachEpochMs: now + 1000 })] };
-    expect(planSmartAlerts(week, 1, now, fakeT)).toEqual([]);
+    expect(planSmartAlerts(week, 1, now, fakeT, 'en')).toEqual([]);
   });
   it('includes an object whose missLunar exactly equals dangerLD (inclusive threshold)', () => {
     const week: NeoWeek = {
       d1: [mkAst({ id: 'p', missLunar: 1, approachEpochMs: now + 5_000 })],
     };
-    expect(planSmartAlerts(week, 1, now, fakeT).map((a) => a.asteroidId)).toEqual(['p']);
+    expect(planSmartAlerts(week, 1, now, fakeT, 'en').map((a) => a.asteroidId)).toEqual(['p']);
   });
   it('excludes an object whose approachEpochMs exactly equals `now` (exclusive future check)', () => {
     const week: NeoWeek = {
       d1: [mkAst({ id: 'p', missLunar: 0.5, approachEpochMs: now })],
     };
-    expect(planSmartAlerts(week, 1, now, fakeT)).toEqual([]);
+    expect(planSmartAlerts(week, 1, now, fakeT, 'en')).toEqual([]);
   });
   it('dedupes by id keeping the earliest occurrence, even when the earliest is iterated first', () => {
     const week: NeoWeek = {
       d1: [mkAst({ id: 'a', missLunar: 0.5, approachEpochMs: now + 10_000 })], // earliest, inserted first
       d2: [mkAst({ id: 'a', missLunar: 0.5, approachEpochMs: now + 30_000 })], // later, inserted second
     };
-    const alerts = planSmartAlerts(week, 1, now, fakeT);
+    const alerts = planSmartAlerts(week, 1, now, fakeT, 'en');
     expect(alerts.map((a) => a.asteroidId)).toEqual(['a']);
     expect(alerts[0].fireDate.getTime()).toBe(now + 10_000);
+  });
+  it('formats the distance with locale-specific separators', () => {
+    const week: NeoWeek = {
+      d1: [mkAst({ id: 'e', displayName: 'Echo', missLunar: 0.5, approachEpochMs: now + 10_000 })],
+    };
+    const alerts = planSmartAlerts(week, 1, now, fakeT, 'el');
+    expect(alerts[0].body).toBe('Echo passes 0,5 LD away at closest approach.');
   });
 });

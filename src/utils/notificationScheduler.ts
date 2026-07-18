@@ -68,7 +68,7 @@ export async function syncAutoNotifications(
   const digests = settings.dailyDigestEnabled
     ? planDailyDigests(week, settings.digestHour, thresholds, now, t, locale)
     : [];
-  const alerts = settings.smartAlertsEnabled ? planSmartAlerts(week, settings.dangerLD, now, t) : [];
+  const alerts = settings.smartAlertsEnabled ? planSmartAlerts(week, settings.dangerLD, now, t, locale) : [];
 
   const newIds: string[] = [];
   for (const d of digests) {
