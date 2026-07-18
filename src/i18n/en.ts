@@ -24,6 +24,7 @@ export const en = {
     appVersion: 'Armageddon Radar v%{version}',
     dataSource: 'Data: NASA NeoWs (api.nasa.gov)',
     sourceOnGithub: 'Source on GitHub',
+    supportDev: 'Support the dev',
   },
   threat: {
     hazardVerdict: '🚨 Lock your doors. (Just kidding, but it’s close!)',
