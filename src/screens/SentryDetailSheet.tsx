@@ -8,6 +8,7 @@ import { useSentryDetail } from '../hooks/useSentryDetail';
 import { TorinoChip } from '../components/TorinoChip';
 import { formatOdds } from '../utils/torino';
 import { formatInt } from '../utils/units';
+import { formatNumber } from '../i18n/format';
 import { useTranslation } from '../i18n/LocaleContext';
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -49,16 +50,16 @@ export function SentryDetailSheet({ risk, onClose }: { risk: SentryRisk | null; 
             <Row label={t('sentry.impactProbability')} value={`${formatOdds(risk.impactProb)} (${(risk.impactProb * 100).toExponential(1)}%)`} />
             <Row label={t('sentry.potentialImpacts')} value={t('sentry.potentialImpactsValue', { count: risk.nImpacts, range: risk.yearRange })} />
             <Row label={t('sentry.estimatedDiameter')} value={`${formatInt(risk.estDiameterM, locale)} m`} />
-            <Row label={t('sentry.palermoCumulative')} value={risk.palermoCum.toFixed(2)} />
+            <Row label={t('sentry.palermoCumulative')} value={formatNumber(risk.palermoCum, locale, 2)} />
 
             {isLoading && <View className="py-6 items-center"><ActivityIndicator color={colors.accentBlue} /></View>}
             {isError && <Text className="py-6 text-center text-xs" style={{ color: colors.textMuted }}>{t('sentry.extendedRiskUnavailable')}</Text>}
             {data && (
               <>
-                <Row label={t('sentry.palermoMax')} value={data.palermoMax.toFixed(2)} />
+                <Row label={t('sentry.palermoMax')} value={formatNumber(data.palermoMax, locale, 2)} />
                 <Row label={t('sentry.impactEnergy')} value={`${formatInt(data.energyMt, locale)} MT TNT`} />
                 <Row label={t('sentry.mass')} value={`${data.massKg.toExponential(2)} kg`} />
-                <Row label={t('sentry.velocityInf')} value={`${data.vInfKps.toFixed(1)} km/s`} />
+                <Row label={t('sentry.velocityInf')} value={`${formatNumber(data.vInfKps, locale, 1)} km/s`} />
                 <Row label={t('sentry.firstObserved')} value={data.firstObs} />
                 <Row label={t('sentry.lastObserved')} value={data.lastObs} />
               </>

@@ -200,7 +200,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
                 <Text className="mt-6 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>{t('detail.more')}</Text>
                 <DataRow label={t('detail.orbitClassDetail')} value={detail.data.orbital.orbitClassDescription} />
                 <DataRow label={t('detail.firstLastObserved')} value={`${detail.data.orbital.firstObservation} → ${detail.data.orbital.lastObservation}`} />
-                <DataRow label={t('detail.absoluteMagnitude')} value={detail.data.absoluteMagnitude.toFixed(1)} />
+                <DataRow label={t('detail.absoluteMagnitude')} value={formatNumber(detail.data.absoluteMagnitude, locale, 1)} />
               </>
             )}
 

@@ -5,6 +5,7 @@ import { colors } from '../theme/colors';
 import { getThreatLevel } from '../utils/threat';
 import { useThresholds } from '../settings/useFormatters';
 import { useTranslation, TFunc } from '../i18n/LocaleContext';
+import { formatNumber } from '../i18n/format';
 
 interface Props {
   week: NeoWeek;
@@ -24,7 +25,7 @@ function weekdayLabel(key: string, t: TFunc): string {
 
 export function DaySelector({ week, selectedDateKey, onSelect }: Props) {
   const thresholds = useThresholds();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const keys = Object.keys(week);
 
   return (
@@ -54,7 +55,7 @@ export function DaySelector({ week, selectedDateKey, onSelect }: Props) {
             </Text>
             <View className="h-1.5 w-1.5 rounded-full my-1" style={{ backgroundColor: zoneColor }} />
             <Text className="text-xs font-bold" style={{ color: colors.textPrimary }}>
-              {closest === null ? '—' : `${closest.toFixed(1)}`}
+              {closest === null ? '—' : formatNumber(closest, locale, 1)}
             </Text>
           </Pressable>
         );

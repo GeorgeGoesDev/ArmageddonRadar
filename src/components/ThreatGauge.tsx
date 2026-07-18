@@ -14,6 +14,7 @@ import { describeArc, polarToCartesian } from '../utils/geometry';
 import { getThreatLevel } from '../utils/threat';
 import { useThresholds } from '../settings/useFormatters';
 import { useTranslation } from '../i18n/LocaleContext';
+import { formatNumber } from '../i18n/format';
 
 interface ThreatGaugeProps {
   /** Closest asteroid's miss distance in lunar distances. */
@@ -35,7 +36,7 @@ export function ThreatGauge({ lunar, size = 260 }: ThreatGaugeProps) {
   const stroke = 16;
 
   const thresholds = useThresholds();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { t: intensity, color } = getThreatLevel(lunar, thresholds);
 
   // Needle sweeps from 180° (safe, left) to 0° (danger, right).
@@ -159,7 +160,7 @@ export function ThreatGauge({ lunar, size = 260 }: ThreatGaugeProps) {
           fontWeight="700"
           textAnchor="middle"
         >
-          {lunar.toFixed(1)}
+          {formatNumber(lunar, locale, 1)}
         </SvgText>
         <SvgText
           x={cx}

@@ -10,6 +10,7 @@ import { useSettings } from '../settings/SettingsContext';
 import { DistanceUnit, VelocityUnit } from '../utils/units';
 import { useTranslation } from '../i18n/LocaleContext';
 import { Locale } from '../i18n/i18n';
+import { formatNumber } from '../i18n/format';
 
 const REPO_URL = 'https://github.com/GeorgeGoesDev/ArmageddonRadar';
 
@@ -80,9 +81,9 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
             />
 
             <Text className="mt-5 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>{t('settings.threatThresholds')}</Text>
-            <Text className="mb-1 text-xs" style={{ color: colors.textMuted }}>{t('settings.redAlertUnder', { value: settings.dangerLD.toFixed(1) })}</Text>
+            <Text className="mb-1 text-xs" style={{ color: colors.textMuted }}>{t('settings.redAlertUnder', { value: formatNumber(settings.dangerLD, locale, 1) })}</Text>
             <Slider minimumValue={0.2} maximumValue={Math.min(3, settings.safeLD - 0.5)} step={0.1} value={settings.dangerLD} onValueChange={(v) => update({ dangerLD: Math.round(v * 10) / 10 })} minimumTrackTintColor={colors.threatOrange} maximumTrackTintColor={colors.spaceSlate} thumbTintColor={colors.threatOrange} />
-            <Text className="mt-2 mb-1 text-xs" style={{ color: colors.textMuted }}>{t('settings.completelySafeAbove', { value: settings.safeLD.toFixed(1) })}</Text>
+            <Text className="mt-2 mb-1 text-xs" style={{ color: colors.textMuted }}>{t('settings.completelySafeAbove', { value: formatNumber(settings.safeLD, locale, 1) })}</Text>
             <Slider minimumValue={Math.max(3, settings.dangerLD + 0.5)} maximumValue={15} step={0.5} value={settings.safeLD} onValueChange={(v) => update({ safeLD: Math.round(v * 2) / 2 })} minimumTrackTintColor={colors.safeGreen} maximumTrackTintColor={colors.spaceSlate} thumbTintColor={colors.safeGreen} />
 
             <Text className="mt-5 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>{t('settings.feedback')}</Text>
