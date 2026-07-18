@@ -26,6 +26,7 @@ export const el: Catalog = {
     appVersion: 'Armageddon Radar v%{version}',
     dataSource: 'Δεδομένα: NASA NeoWs (api.nasa.gov)',
     sourceOnGithub: 'Πηγαίος κώδικας στο GitHub',
+    supportDev: 'Κέρασέ με έναν καφέ',
   },
   threat: {
     hazardVerdict: '🚨 Κλείδωσε τις πόρτες. (Πλάκα κάνω, αλλά είναι κοντά!)',

@@ -13,6 +13,7 @@ import { Locale } from '../i18n/i18n';
 import { formatNumber } from '../i18n/format';
 
 const REPO_URL = 'https://github.com/GeorgeGoesDev/ArmageddonRadar';
+const KOFI_URL = 'https://ko-fi.com/georgekoutanis';
 
 function Segmented<T extends string>({ options, value, onChange }: { options: { key: T; label: string }[]; value: T; onChange: (v: T) => void }) {
   return (
@@ -147,6 +148,14 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
             <Text className="text-xs mt-1" style={{ color: colors.textMuted }}>{t('settings.dataSource')}</Text>
             <Pressable onPress={() => Linking.openURL(REPO_URL)} className="mt-1">
               <Text className="text-xs" style={{ color: colors.accentBlue }}>{t('settings.sourceOnGithub')}</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => Linking.openURL(KOFI_URL).catch(() => {})}
+              className="mt-3 flex-row items-center justify-center rounded-xl py-3"
+              style={{ backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.accentBlue }}
+            >
+              <MaterialCommunityIcons name="coffee" size={18} color={colors.accentBlue} />
+              <Text className="text-sm font-semibold ml-2" style={{ color: colors.accentBlue }}>{t('settings.supportDev')}</Text>
             </Pressable>
           </ScrollView>
           </SafeAreaView>
