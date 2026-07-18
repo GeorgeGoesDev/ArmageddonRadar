@@ -1,25 +1,30 @@
+import { TFunc } from '../i18n/LocaleContext';
+
 /**
  * Fun human-scale conversions for an asteroid's estimated diameter.
+ *
+ * `labelKey`/`pluralKey` point at `scale.landmarks.*` catalog entries rather
+ * than holding English text directly, so the comparison sentence localizes.
  */
 export interface Landmark {
-  singular: string;
-  plural: string;
+  labelKey: string;
+  pluralKey: string;
   meters: number;
   emoji: string;
 }
 
 const COMPARISONS: Landmark[] = [
-  { singular: 'garden gnome', plural: 'garden gnomes', meters: 0.4, emoji: '🗿' },
-  { singular: 'human', plural: 'humans', meters: 1.8, emoji: '🧍' },
-  { singular: 'double-decker bus', plural: 'double-decker buses', meters: 9, emoji: '🚌' },
-  { singular: 'T-Rex', plural: 'T-Rexes', meters: 12, emoji: '🦖' },
-  { singular: 'blue whale', plural: 'blue whales', meters: 30, emoji: '🐋' },
-  { singular: 'Boeing 747', plural: 'Boeing 747s', meters: 70, emoji: '✈️' },
-  { singular: 'Statue of Liberty', plural: 'Statues of Liberty', meters: 93, emoji: '🗽' },
-  { singular: 'football pitch', plural: 'football pitches', meters: 105, emoji: '🏟️' },
-  { singular: 'Eiffel Tower', plural: 'Eiffel Towers', meters: 330, emoji: '🗼' },
-  { singular: 'Empire State Building', plural: 'Empire State Buildings', meters: 443, emoji: '🏙️' },
-  { singular: 'Burj Khalifa', plural: 'Burj Khalifas', meters: 828, emoji: '🌆' },
+  { labelKey: 'scale.landmarks.gnome', pluralKey: 'scale.landmarks.gnomePlural', meters: 0.4, emoji: '🗿' },
+  { labelKey: 'scale.landmarks.human', pluralKey: 'scale.landmarks.humanPlural', meters: 1.8, emoji: '🧍' },
+  { labelKey: 'scale.landmarks.bus', pluralKey: 'scale.landmarks.busPlural', meters: 9, emoji: '🚌' },
+  { labelKey: 'scale.landmarks.trex', pluralKey: 'scale.landmarks.trexPlural', meters: 12, emoji: '🦖' },
+  { labelKey: 'scale.landmarks.whale', pluralKey: 'scale.landmarks.whalePlural', meters: 30, emoji: '🐋' },
+  { labelKey: 'scale.landmarks.boeing747', pluralKey: 'scale.landmarks.boeing747Plural', meters: 70, emoji: '✈️' },
+  { labelKey: 'scale.landmarks.statueOfLiberty', pluralKey: 'scale.landmarks.statueOfLibertyPlural', meters: 93, emoji: '🗽' },
+  { labelKey: 'scale.landmarks.footballPitch', pluralKey: 'scale.landmarks.footballPitchPlural', meters: 105, emoji: '🏟️' },
+  { labelKey: 'scale.landmarks.eiffelTower', pluralKey: 'scale.landmarks.eiffelTowerPlural', meters: 330, emoji: '🗼' },
+  { labelKey: 'scale.landmarks.empireStateBuilding', pluralKey: 'scale.landmarks.empireStateBuildingPlural', meters: 443, emoji: '🏙️' },
+  { labelKey: 'scale.landmarks.burjKhalifa', pluralKey: 'scale.landmarks.burjKhalifaPlural', meters: 828, emoji: '🌆' },
 ];
 
 /**
@@ -41,12 +46,11 @@ export function bestFitLandmark(meters: number): { landmark: Landmark; count: nu
 }
 
 /** Friendly comparison string, e.g. "About 6 double-decker buses 🚌". */
-export function describeDiameter(meters: number): string {
-  if (!isFinite(meters) || meters <= 0) return 'Roughly pebble-sized 🪨';
+export function describeDiameter(meters: number, t: TFunc): string {
+  if (!isFinite(meters) || meters <= 0) return t('scale.pebble');
   const fit = bestFitLandmark(meters);
-  if (!fit) return 'Smaller than a garden gnome 🗿';
+  if (!fit) return t('scale.gnome');
   const { landmark, count } = fit;
-  const label = count === 1 ? landmark.singular : landmark.plural;
-  const article = count === 1 ? 'About 1' : `About ${count}`;
-  return `${article} ${label} ${landmark.emoji}`;
+  const label = t(count === 1 ? landmark.labelKey : landmark.pluralKey);
+  return t('scale.about', { count, label, emoji: landmark.emoji });
 }

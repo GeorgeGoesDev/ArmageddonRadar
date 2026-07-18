@@ -161,7 +161,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
             <DataRow label={t('detail.relativeVelocity')} value={fmt.velocity(asteroid.velocityKph)} />
             <DataRow label={t('detail.missDistance')} value={fmt.distanceFromLunar(asteroid.missLunar, asteroid.missKm, asteroid.missMiles)} />
             <DataRow label={t('detail.estimatedDiameter')} value={`${formatInt(asteroid.diameterMinM, locale)} – ${formatInt(asteroid.diameterMaxM, locale)} m`} />
-            <DataRow label={t('detail.sizeRoughly')} value={describeDiameter(asteroid.diameterAvgM)} />
+            <DataRow label={t('detail.sizeRoughly')} value={describeDiameter(asteroid.diameterAvgM, t)} />
 
             {/* Extended detail from /neo/{id} */}
             {detail.isLoading && (

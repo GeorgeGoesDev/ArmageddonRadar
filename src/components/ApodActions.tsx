@@ -110,7 +110,7 @@ export function ApodActions({ apod }: { apod: Apod }) {
 
   function pickTarget(target: WallpaperTarget) {
     setChoosing(false);
-    run('wallpaper', () => setApodAsWallpaper(apod, target));
+    run('wallpaper', () => setApodAsWallpaper(apod, target, t));
   }
 
   return (
@@ -123,7 +123,7 @@ export function ApodActions({ apod }: { apod: Apod }) {
           done={done === 'save'}
           doneLabel={t('apod.saved')}
           disabled={busy !== null}
-          onPress={() => run('save', () => saveApodToGallery(apod))}
+          onPress={() => run('save', () => saveApodToGallery(apod, t))}
         />
         <ActionButton
           icon="wallpaper"

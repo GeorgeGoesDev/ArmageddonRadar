@@ -48,7 +48,7 @@ export function ScaleVisual({ diameterM, width }: { diameterM: number; width: nu
         {fit
           ? t('impact.scaleFit', {
               count: fit.count,
-              landmark: fit.count === 1 ? fit.landmark.singular : fit.landmark.plural,
+              landmark: t(fit.count === 1 ? fit.landmark.labelKey : fit.landmark.pluralKey),
               emoji: fit.landmark.emoji,
             })
           : t('impact.scaleFallback')}

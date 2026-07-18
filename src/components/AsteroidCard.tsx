@@ -121,7 +121,7 @@ export function AsteroidCard({ asteroid, selected, onPress, onDetails }: Asteroi
       {/* Fun size comparison */}
       <View className="mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: colors.gridLineFaint }}>
         <Text className="text-xs" style={{ color: colors.accentBlue }}>
-          {describeDiameter(asteroid.diameterAvgM)}
+          {describeDiameter(asteroid.diameterAvgM, t)}
         </Text>
       </View>
     </Pressable>
