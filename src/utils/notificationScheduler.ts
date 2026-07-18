@@ -15,16 +15,16 @@ function getNotifications() {
   return require('expo-notifications') as typeof import('expo-notifications');
 }
 
-async function ensureAutoChannels(): Promise<void> {
+async function ensureAutoChannels(t: TFunc): Promise<void> {
   if (Platform.OS !== 'android') return;
   const N = getNotifications();
   await N.setNotificationChannelAsync('daily-digest', {
-    name: 'Daily Digest',
+    name: t('notify.channelDigest'),
     importance: N.AndroidImportance.DEFAULT,
     lightColor: '#66FCF1',
   });
   await N.setNotificationChannelAsync('smart-alerts', {
-    name: 'Smart Alerts',
+    name: t('notify.channelAlerts'),
     importance: N.AndroidImportance.HIGH,
     lightColor: '#FF4500',
   });
@@ -54,7 +54,7 @@ export async function syncAutoNotifications(
     });
     if (!req.granted) return;
   }
-  await ensureAutoChannels();
+  await ensureAutoChannels(t);
 
   // Cancel the previous auto set.
   try {

@@ -10,10 +10,15 @@ import { colors } from '../theme/colors';
 import { useTranslation } from '../i18n/LocaleContext';
 import type { Locale } from '../i18n/i18n';
 
+/** In Greek, swap the `.` decimal separator for `,` (matches formatNumber's convention). */
+function localizeDecimal(s: string, locale: Locale): string {
+  return locale === 'el' ? s.replace('.', ',') : s;
+}
+
 function pretty(n: number, locale: Locale): string {
   if (n >= 1000) return formatInt(n, locale);
-  if (n >= 1) return n.toPrecision(3);
-  return n.toPrecision(2);
+  const s = n >= 1 ? n.toPrecision(3) : n.toPrecision(2);
+  return localizeDecimal(s, locale);
 }
 
 export function ImpactReport({ asteroid, width }: { asteroid: Asteroid; width: number }) {
@@ -30,8 +35,8 @@ export function ImpactReport({ asteroid, width }: { asteroid: Asteroid; width: n
       <View className="mt-3 rounded-2xl p-4" style={{ backgroundColor: colors.spaceSlate }}>
         <Text className="text-lg font-bold" style={{ color: colors.threatOrange }}>{t('impact.megatonsTnt', { value: pretty(energyMt, locale) })}</Text>
         <Text className="text-sm mt-1" style={{ color: colors.textPrimary }}>{t('impact.hiroshimaBombs', { count: formatInt(hiroshimas, locale) })}</Text>
-        <Text className="text-sm mt-1" style={{ color: colors.textPrimary }}>{t('impact.craterWidth', { value: craterKm >= 1 ? `${craterKm.toFixed(1)} km` : `${formatInt(craterKm * 1000, locale)} m` })}</Text>
-        <Text className="text-sm mt-2 font-semibold" style={{ color: colors.threatYellow }}>{severity}</Text>
+        <Text className="text-sm mt-1" style={{ color: colors.textPrimary }}>{t('impact.craterWidth', { value: craterKm >= 1 ? `${localizeDecimal(craterKm.toFixed(1), locale)} km` : `${formatInt(craterKm * 1000, locale)} m` })}</Text>
+        <Text className="text-sm mt-2 font-semibold" style={{ color: colors.threatYellow }}>{t(severity)}</Text>
       </View>
 
       <View className="mt-3 rounded-2xl p-2" style={{ backgroundColor: colors.charcoal }}>

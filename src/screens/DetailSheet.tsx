@@ -70,7 +70,7 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
   const handleReminder = async () => {
     setReminder({ status: 'loading' });
     try {
-      const res = await scheduleApproachReminder(asteroid);
+      const res = await scheduleApproachReminder(asteroid, t, locale);
       setReminder({
         status: 'done',
         message: res.adjusted
