@@ -9,6 +9,7 @@ import { getThreatLevel, threatShortVerdict } from '../utils/threat';
 import { asteroidColor } from '../utils/asteroidColor';
 import { describeDiameter } from '../data/diameterComparisons';
 import { formatInt, KM_TO_MILES } from '../utils/units';
+import { formatNumber } from '../i18n/format';
 import { formatLocalDateTime, formatLocalTime } from '../utils/dates';
 import { scheduleApproachReminder } from '../utils/notifications';
 import { useFormatters, useThresholds } from '../settings/useFormatters';
@@ -175,11 +176,11 @@ export function DetailSheet({ asteroid, visible, onClose }: DetailSheetProps) {
             {detail.data && (
               <>
                 <Text className="mt-6 mb-1 text-xs uppercase tracking-widest" style={{ color: colors.accentBlue }}>{t('detail.orbitalElements')}</Text>
-                <DataRow label={t('detail.semiMajorAxis')} value={`${detail.data.orbital.semiMajorAxisAu.toFixed(3)} AU`} />
-                <DataRow label={t('detail.eccentricity')} value={detail.data.orbital.eccentricity.toFixed(3)} />
-                <DataRow label={t('detail.inclination')} value={`${detail.data.orbital.inclinationDeg.toFixed(1)}°`} />
-                <DataRow label={t('detail.orbitalPeriod')} value={`${fmt.int(detail.data.orbital.orbitalPeriodDays)} days`} />
-                <DataRow label={t('detail.perihelionAphelion')} value={`${detail.data.orbital.perihelionAu.toFixed(2)} / ${detail.data.orbital.aphelionAu.toFixed(2)} AU`} />
+                <DataRow label={t('detail.semiMajorAxis')} value={`${formatNumber(detail.data.orbital.semiMajorAxisAu, locale, 3)} AU`} />
+                <DataRow label={t('detail.eccentricity')} value={formatNumber(detail.data.orbital.eccentricity, locale, 3)} />
+                <DataRow label={t('detail.inclination')} value={`${formatNumber(detail.data.orbital.inclinationDeg, locale, 1)}°`} />
+                <DataRow label={t('detail.orbitalPeriod')} value={`${fmt.int(detail.data.orbital.orbitalPeriodDays)} ${t('common.days')}`} />
+                <DataRow label={t('detail.perihelionAphelion')} value={`${formatNumber(detail.data.orbital.perihelionAu, locale, 2)} / ${formatNumber(detail.data.orbital.aphelionAu, locale, 2)} AU`} />
                 <DataRow label={t('detail.orbitClass')} value={detail.data.orbital.orbitClassType} />
 
                 {detail.data.approaches.length > 0 && (

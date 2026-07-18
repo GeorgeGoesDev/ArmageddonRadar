@@ -1,7 +1,7 @@
 import type { Catalog } from './en';
 
 export const el: Catalog = {
-  common: { close: 'Κλείσιμο', cancel: 'Άκυρο', retry: 'Επανάληψη' },
+  common: { close: 'Κλείσιμο', cancel: 'Άκυρο', retry: 'Επανάληψη', days: 'ημέρες' },
   settings: {
     language: 'Γλώσσα',
     title: 'Ρυθμίσεις',

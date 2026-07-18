@@ -1,5 +1,5 @@
 export const en = {
-  common: { close: 'Close', cancel: 'Cancel', retry: 'Retry' },
+  common: { close: 'Close', cancel: 'Cancel', retry: 'Retry', days: 'days' },
   settings: {
     language: 'Language',
     title: 'Settings',
