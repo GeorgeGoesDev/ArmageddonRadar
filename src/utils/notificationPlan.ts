@@ -1,6 +1,9 @@
 import { Asteroid } from '../types/neo';
 import { NeoWeek } from '../api/nasa';
 import { getThreatLevel, ThreatThresholds } from './threat';
+import type { TFunc } from '../i18n/LocaleContext';
+import type { Locale } from '../i18n/i18n';
+import { formatNumber } from '../i18n/format';
 
 export interface DigestPlan {
   fireDate: Date;
@@ -22,9 +25,9 @@ function fireDateForDay(dayKey: string, hour: number): Date {
   return new Date(y, m - 1, d, hour, 0, 0, 0);
 }
 
-function threatLabel(missLunar: number, thresholds: ThreatThresholds): string {
+function threatLabel(missLunar: number, thresholds: ThreatThresholds, t: TFunc): string {
   const zone = getThreatLevel(missLunar, thresholds).zone;
-  return zone === 'danger' ? 'DANGER' : zone === 'watch' ? 'WATCH' : 'ALL CLEAR';
+  return zone === 'danger' ? t('notify.zoneDanger') : zone === 'watch' ? t('notify.zoneWatch') : t('notify.zoneAllClear');
 }
 
 /**
@@ -37,6 +40,8 @@ export function planDailyDigests(
   digestHour: number,
   thresholds: ThreatThresholds,
   now: number,
+  t: TFunc,
+  locale: Locale,
 ): DigestPlan[] {
   const plans: DigestPlan[] = [];
   for (const dayKey of Object.keys(week).sort()) {
@@ -48,8 +53,12 @@ export function planDailyDigests(
     plans.push({
       fireDate,
       dayKey,
-      title: '🌑 Closest approach today',
-      body: `${closest.displayName} passes ${closest.missLunar.toFixed(1)} LD away — ${threatLabel(closest.missLunar, thresholds)}`,
+      title: t('notify.digestTitle'),
+      body: t('notify.digestBody', {
+        name: closest.displayName,
+        distance: `${formatNumber(closest.missLunar, locale, 1)} LD`,
+        threat: threatLabel(closest.missLunar, thresholds, t),
+      }),
     });
   }
   return plans;
@@ -60,7 +69,7 @@ export function planDailyDigests(
  * `dangerLD`; de-duped by id keeping the earliest qualifying approach, sorted
  * ascending by fire time.
  */
-export function planSmartAlerts(week: NeoWeek, dangerLD: number, now: number): AlertPlan[] {
+export function planSmartAlerts(week: NeoWeek, dangerLD: number, now: number, t: TFunc): AlertPlan[] {
   const byId = new Map<string, Asteroid>();
   for (const list of Object.values(week)) {
     for (const a of list) {
@@ -75,7 +84,7 @@ export function planSmartAlerts(week: NeoWeek, dangerLD: number, now: number): A
     .map((a) => ({
       fireDate: new Date(a.approachEpochMs),
       asteroidId: a.id,
-      title: '☄️ Close approach incoming',
-      body: `${a.displayName} passes ${a.missLunar.toFixed(1)} LD away at closest approach.`,
+      title: t('notify.alertTitle'),
+      body: t('notify.alertBody', { name: a.displayName, distance: `${a.missLunar.toFixed(1)} LD` }),
     }));
 }

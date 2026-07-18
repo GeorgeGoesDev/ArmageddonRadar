@@ -66,7 +66,7 @@ function ErrorState({ message, onRetry, onDemo }: { message: string; onRetry: ()
 }
 
 export function DashboardScreen() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [useMock, setUseMock] = useState(false);
   const todayKey = useLocalDateKey();
   const [selectedDateKey, setSelectedDateKey] = useState<string>(todayKey);
@@ -111,9 +111,9 @@ export function DashboardScreen() {
   // Expo Go; cancels only our previously-scheduled auto set.
   useEffect(() => {
     if (!week) return;
-    syncAutoNotifications(week, settings, thresholds).catch(() => {});
-    syncWidget(week, thresholds).catch(() => {});
-  }, [week, settings.dailyDigestEnabled, settings.digestHour, settings.smartAlertsEnabled, thresholds.dangerLD, thresholds.safeLD]);
+    syncAutoNotifications(week, settings, thresholds, t, locale).catch(() => {});
+    syncWidget(week, thresholds, t, locale).catch(() => {});
+  }, [week, settings.dailyDigestEnabled, settings.digestHour, settings.smartAlertsEnabled, thresholds.dangerLD, thresholds.safeLD, t, locale]);
 
   const effectiveSelectedId = selectedId ?? closest?.id ?? null;
 

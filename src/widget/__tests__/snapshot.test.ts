@@ -9,6 +9,13 @@ import type { Asteroid } from '../../types/neo';
 
 const thresholds = { dangerLD: 1, safeLD: 5 };
 
+// Fake `t`: returns the key itself (with any params appended) so assertions
+// can check the right catalog key was requested without depending on i18n-js.
+function fakeT(key: string, params?: Record<string, unknown>): string {
+  if (!params) return key;
+  return `${key}(${Object.entries(params).map(([k, v]) => `${k}=${v}`).join(',')})`;
+}
+
 function ast(id: string, missLunar: number, approachEpochMs: number): Asteroid {
   return {
     id, name: id, displayName: id, hazardous: false,
@@ -31,21 +38,26 @@ describe('buildWidgetSnapshot', () => {
         ast('later', 8, NOW + 5 * HOUR),
       ],
     };
-    const snap = buildWidgetSnapshot(week, thresholds, NOW);
+    const snap = buildWidgetSnapshot(week, thresholds, NOW, fakeT, 'en');
     expect(snap.entries.map((e) => e.name)).toEqual(['soon', 'later']);
     expect(snap.entries[0].distance).toBe('3.4 LD');
-    expect(snap.entries[0].threatLabel).toBe('CAUTION'); // 1 <= 3.4 <= 5 -> watch
+    expect(snap.entries[0].threatLabel).toBe('widget.labelCaution'); // 1 <= 3.4 <= 5 -> watch
     expect(snap.entries.length).toBeLessThanOrEqual(10);
   });
 
   it('returns an empty snapshot for an all-past / empty feed', () => {
-    expect(buildWidgetSnapshot({ '2026-07-17': [ast('p', 2, NOW - HOUR)] }, thresholds, NOW).entries).toEqual([]);
-    expect(buildWidgetSnapshot({}, thresholds, NOW).entries).toEqual([]);
+    expect(buildWidgetSnapshot({ '2026-07-17': [ast('p', 2, NOW - HOUR)] }, thresholds, NOW, fakeT, 'en').entries).toEqual([]);
+    expect(buildWidgetSnapshot({}, thresholds, NOW, fakeT, 'en').entries).toEqual([]);
   });
 
   it('labels a sub-danger object HAZARDOUS', () => {
-    const snap = buildWidgetSnapshot({ '2026-07-17': [ast('close', 0.5, NOW + HOUR)] }, thresholds, NOW);
-    expect(snap.entries[0].threatLabel).toBe('HAZARDOUS');
+    const snap = buildWidgetSnapshot({ '2026-07-17': [ast('close', 0.5, NOW + HOUR)] }, thresholds, NOW, fakeT, 'en');
+    expect(snap.entries[0].threatLabel).toBe('widget.labelHazardous');
+  });
+
+  it('formats the distance with locale-specific separators', () => {
+    const snap = buildWidgetSnapshot({ '2026-07-17': [ast('far', 1234.5, NOW + HOUR)] }, thresholds, NOW, fakeT, 'el');
+    expect(snap.entries[0].distance).toBe('1.234,5 LD');
   });
 });
 
@@ -93,11 +105,11 @@ describe('selectNextApproach', () => {
 });
 
 describe('formatApproachTime', () => {
-  it('uses Today for the same local day', () => {
-    expect(formatApproachTime(new Date(2026, 6, 17, 14, 20).getTime(), NOW)).toBe('Today 14:20');
+  it('uses widget.today for the same local day', () => {
+    expect(formatApproachTime(new Date(2026, 6, 17, 14, 20).getTime(), NOW, fakeT)).toBe('widget.today 14:20');
   });
-  it('uses a weekday for another day and zero-pads', () => {
-    // 2026-07-18 is a Saturday.
-    expect(formatApproachTime(new Date(2026, 6, 18, 3, 5).getTime(), NOW)).toBe('Sat 03:05');
+  it('uses the matching weekday key for another day and zero-pads', () => {
+    // 2026-07-18 is a Saturday (day 6).
+    expect(formatApproachTime(new Date(2026, 6, 18, 3, 5).getTime(), NOW, fakeT)).toBe('widget.wd6 03:05');
   });
 });

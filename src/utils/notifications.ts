@@ -10,16 +10,12 @@ import { formatLocalTime } from './dates';
  * moment its native module initialises inside Expo Go. So we:
  *   1. detect Expo Go via `expo-constants`, and
  *   2. only ever `require('expo-notifications')` when NOT in Expo Go.
- * In Expo Go the reminder gracefully no-ops with a helpful message; in a
- * development or production build it schedules a real local notification.
+ * In Expo Go the reminder gracefully no-ops; outside Expo Go it schedules a
+ * real local notification.
  */
 
 export const isExpoGo =
   Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-
-const DEV_BUILD_HINT =
-  'Reminders need a development build — Expo Go removed notifications in SDK 53. ' +
-  'Run `npx expo run:android` to enable them.';
 
 // Lazy require so the module never initialises inside Expo Go.
 function getNotifications() {
@@ -80,7 +76,10 @@ export async function scheduleApproachReminder(
   asteroid: Asteroid,
 ): Promise<ScheduledReminder> {
   if (isExpoGo) {
-    throw new Error(DEV_BUILD_HINT);
+    // No-op: the native module isn't available here. Reject with a non-Error
+    // so callers fall back to their own generic, already-localized failure
+    // copy instead of us surfacing raw English from this non-React layer.
+    return Promise.reject();
   }
 
   const Notifications = getNotifications();

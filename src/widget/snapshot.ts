@@ -1,6 +1,9 @@
 import type { NeoWeek } from '../api/nasa';
 import type { Asteroid } from '../types/neo';
 import { getThreatLevel, ThreatThresholds } from '../utils/threat';
+import type { TFunc } from '../i18n/LocaleContext';
+import type { Locale } from '../i18n/i18n';
+import { formatNumber } from '../i18n/format';
 
 export interface WidgetEntry {
   name: string;
@@ -21,13 +24,12 @@ export type WidgetState =
   | { kind: 'expired' }
   | { kind: 'empty' };
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MAX_ENTRIES = 10;
 
 const pad2 = (n: number): string => String(n).padStart(2, '0');
 
 /** Local "Today HH:MM" for same-day, else "Wkd HH:MM". No Intl (Hermes-safe). */
-export function formatApproachTime(epochMs: number, now: number): string {
+export function formatApproachTime(epochMs: number, now: number, t: TFunc): string {
   const d = new Date(epochMs);
   const n = new Date(now);
   const time = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
@@ -35,11 +37,11 @@ export function formatApproachTime(epochMs: number, now: number): string {
     d.getFullYear() === n.getFullYear() &&
     d.getMonth() === n.getMonth() &&
     d.getDate() === n.getDate();
-  return sameDay ? `Today ${time}` : `${WEEKDAYS[d.getDay()]} ${time}`;
+  return sameDay ? `${t('widget.today')} ${time}` : `${t('widget.wd' + d.getDay())} ${time}`;
 }
 
-function threatLabelFor(zone: 'danger' | 'watch' | 'safe'): string {
-  return zone === 'danger' ? 'HAZARDOUS' : zone === 'watch' ? 'CAUTION' : 'SAFE';
+function threatLabelFor(zone: 'danger' | 'watch' | 'safe', t: TFunc): string {
+  return zone === 'danger' ? t('widget.labelHazardous') : zone === 'watch' ? t('widget.labelCaution') : t('widget.labelSafe');
 }
 
 /** Next up-to-10 future approaches, ascending, pre-formatted for the widget. */
@@ -47,6 +49,8 @@ export function buildWidgetSnapshot(
   week: NeoWeek,
   thresholds: ThreatThresholds,
   now: number,
+  t: TFunc,
+  locale: Locale,
 ): WidgetSnapshot {
   const all: Asteroid[] = ([] as Asteroid[]).concat(...Object.values(week));
   const entries = all
@@ -57,10 +61,10 @@ export function buildWidgetSnapshot(
       const threat = getThreatLevel(a.missLunar, thresholds);
       return {
         name: a.displayName,
-        distance: `${a.missLunar.toFixed(1)} LD`,
+        distance: `${formatNumber(a.missLunar, locale, 1)} LD`,
         approachEpochMs: a.approachEpochMs,
-        absoluteTime: formatApproachTime(a.approachEpochMs, now),
-        threatLabel: threatLabelFor(threat.zone),
+        absoluteTime: formatApproachTime(a.approachEpochMs, now, t),
+        threatLabel: threatLabelFor(threat.zone, t),
         threatColor: threat.color,
       };
     });

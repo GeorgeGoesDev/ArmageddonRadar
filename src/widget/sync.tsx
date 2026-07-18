@@ -6,6 +6,8 @@ import { isExpoGo } from '../utils/notifications';
 import { buildWidgetSnapshot, selectNextApproach } from './snapshot';
 import { writeWidgetSnapshot } from './storage';
 import { NextApproachWidget } from './NextApproachWidget';
+import type { TFunc } from '../i18n/LocaleContext';
+import type { Locale } from '../i18n/i18n';
 
 const WIDGET_NAME = 'NextApproach';
 
@@ -17,11 +19,13 @@ const WIDGET_NAME = 'NextApproach';
 export async function syncWidget(
   week: NeoWeek,
   thresholds: ThreatThresholds,
+  t: TFunc,
+  locale: Locale,
   now: number = Date.now(),
 ): Promise<void> {
   if (isExpoGo) return;
   try {
-    const snapshot = buildWidgetSnapshot(week, thresholds, now);
+    const snapshot = buildWidgetSnapshot(week, thresholds, now, t, locale);
     await writeWidgetSnapshot(snapshot);
     await requestWidgetUpdate({
       widgetName: WIDGET_NAME,

@@ -5,6 +5,8 @@ import { Settings } from '../settings/settingsModel';
 import { ThreatThresholds } from './threat';
 import { isExpoGo } from './notifications';
 import { planDailyDigests, planSmartAlerts } from './notificationPlan';
+import type { TFunc } from '../i18n/LocaleContext';
+import type { Locale } from '../i18n/i18n';
 
 const SCHEDULED_KEY = 'scheduledAuto:v1';
 
@@ -38,6 +40,8 @@ export async function syncAutoNotifications(
   week: NeoWeek,
   settings: Settings,
   thresholds: ThreatThresholds,
+  t: TFunc,
+  locale: Locale,
   now: number = Date.now(),
 ): Promise<void> {
   if (isExpoGo) return;
@@ -62,9 +66,9 @@ export async function syncAutoNotifications(
   }
 
   const digests = settings.dailyDigestEnabled
-    ? planDailyDigests(week, settings.digestHour, thresholds, now)
+    ? planDailyDigests(week, settings.digestHour, thresholds, now, t, locale)
     : [];
-  const alerts = settings.smartAlertsEnabled ? planSmartAlerts(week, settings.dangerLD, now) : [];
+  const alerts = settings.smartAlertsEnabled ? planSmartAlerts(week, settings.dangerLD, now, t) : [];
 
   const newIds: string[] = [];
   for (const d of digests) {
