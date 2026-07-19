@@ -33,19 +33,33 @@ import { useTranslation } from '../i18n/LocaleContext';
 
 function Header({ onWatchlist, onWeek, onSettings, onRisk }: { onWatchlist: () => void; onWeek: () => void; onSettings: () => void; onRisk: () => void }) {
   const { t } = useTranslation();
+  const actions: { key: string; icon: keyof typeof MaterialCommunityIcons.glyphMap; color: string; onPress: () => void }[] = [
+    { key: 'watchlist', icon: 'star', color: colors.threatYellow, onPress: onWatchlist },
+    { key: 'risk', icon: 'skull-outline', color: colors.threatOrange, onPress: onRisk },
+    { key: 'week', icon: 'calendar-week', color: colors.accentBlue, onPress: onWeek },
+    { key: 'settings', icon: 'cog', color: colors.accentBlue, onPress: onSettings },
+  ];
   return (
     <View className="px-4 pt-2 pb-3">
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center flex-1">
-          <MaterialCommunityIcons name="radar" size={24} color={colors.accentBlue} />
-          <Text className="ml-2 text-xl font-extrabold tracking-widest" style={{ color: colors.textPrimary }}>{t('dashboard.title')}</Text>
-        </View>
-        <Pressable onPress={onWatchlist} hitSlop={8} className="ml-2"><MaterialCommunityIcons name="star" size={22} color={colors.threatYellow} /></Pressable>
-        <Pressable onPress={onRisk} hitSlop={8} className="ml-2"><MaterialCommunityIcons name="skull-outline" size={22} color={colors.threatOrange} /></Pressable>
-        <Pressable onPress={onWeek} hitSlop={8} className="ml-2"><MaterialCommunityIcons name="calendar-week" size={22} color={colors.accentBlue} /></Pressable>
-        <Pressable onPress={onSettings} hitSlop={8} className="ml-4"><MaterialCommunityIcons name="cog" size={22} color={colors.accentBlue} /></Pressable>
+      {/* Title on its own full-width line (numberOfLines guards against large-font overflow) */}
+      <View className="flex-row items-center">
+        <MaterialCommunityIcons name="radar" size={24} color={colors.accentBlue} />
+        <Text numberOfLines={1} className="ml-2 flex-1 text-xl font-extrabold tracking-widest" style={{ color: colors.textPrimary }}>{t('dashboard.title')}</Text>
       </View>
       <Text className="mt-1 text-xs" style={{ color: colors.textMuted }}>{t('dashboard.tagline')}</Text>
+      {/* Actions moved to their own segmented bar so they never collide with the title */}
+      <View className="mt-3 flex-row rounded-xl overflow-hidden" style={{ backgroundColor: colors.charcoal, borderWidth: 1, borderColor: colors.cardBorder }}>
+        {actions.map((a, i) => (
+          <Pressable
+            key={a.key}
+            onPress={a.onPress}
+            className="flex-1 items-center justify-center py-3"
+            style={i < actions.length - 1 ? { borderRightWidth: 1, borderRightColor: colors.gridLineFaint } : undefined}
+          >
+            <MaterialCommunityIcons name={a.icon} size={22} color={a.color} />
+          </Pressable>
+        ))}
+      </View>
     </View>
   );
 }
